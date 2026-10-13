@@ -1,17 +1,16 @@
-# Submission
+# Run report and declarations
 
-## Checklist
+## Contents of this submission
 
-| Required item | Where |
+| Item | Where |
 |---|---|
-| Repository link | Fill in after pushing this repository |
-| Exact commit hash | `git rev-parse HEAD` after the push |
 | 100-company smoke-test result | [reports/smoke-100/run-report.json](reports/smoke-100/run-report.json), envelopes in `reports/smoke-100/envelopes.jsonl.gz` |
-| One command to run | See below |
-| Models / APIs / licences | See below |
-| Expected cost per official run | $0 without keys. With the optional connectors switched on: capped at $8 per run by default |
+| Refresh rerun on the same 100 | [reports/smoke-100/run-report-refresh.json](reports/smoke-100/run-report-refresh.json) |
 | 1,000 company profiles | `reports/batch-1000/envelopes-1000.jsonl.gz`, report in [reports/batch-1000/run-report.json](reports/batch-1000/run-report.json) |
 | Browsable dashboard | `docs/index.html` (the 100 smoke-test profiles: overview charts, sortable register, evidence drawer, compare; works from disk or GitHub Pages) |
+| One command to run | Below |
+| Models, APIs and licences | Below |
+| Expected cost per official run | $0 without keys; capped at $8 per run if the optional connectors are switched on |
 
 ## One command
 
@@ -128,31 +127,3 @@ Both batches were drawn from the public 411,160-company universe with a fixed se
 | External API cost | $10 | $0 |
 
 The exact official limits are not published on the challenge page; `--time-budget-min` and `--max-requests` set them.
-
-## Email draft
-
-To: submit@builderr.ai
-Subject: Signalpost Round 1 submission
-
-```
-Agent name: Signalpost Evidence Agent
-Repository URL: <your GitHub URL>
-Exact commit hash: <output of git rev-parse HEAD>
-100-company smoke-test result: <repo URL>/blob/<hash>/reports/smoke-100/run-report.json
-  (envelopes: reports/smoke-100/envelopes.jsonl.gz; refresh rerun: reports/smoke-100/run-report-refresh.json;
-   1,000 profiles: reports/batch-1000/envelopes-1000.jsonl.gz)
-One-command run instruction:
-  python -m signalpost run --organisations <batch file> --output out/envelopes.jsonl --report out/run-report.json
-  (Python 3.10+, standard library only, no install step, no keys)
-Models / APIs / licences: no language model, no paid API, no credentials.
-  Brønnøysund open APIs (NLOD 2.0), Wikidata Query Service (CC0), public company websites (robots.txt honoured),
-  NAV arbeidsplassen.no public job board (throttled), Fagfolkguiden.no public directory pages (customer rating).
-Expected cost per official run: $0 external API cost without keys (capped at $8 if you switch on the optional connectors). Measured 869 requests and 5.3 minutes per 100 companies;
-  7,824 requests and 10.5 minutes per 1,000 companies.
-Contact for results: <your email>
-
-Request: could you supply a search API key for official runs? The agent already contains a Brave Search connector
-(and a Google Places connector) that switch on when SIGNALPOST_SEARCH_API_KEY / SIGNALPOST_PLACES_API_KEY are set.
-Search results are used only as candidate websites; every site must still pass the organisation-number identity
-gate before anything is published. Without a key the agent runs exactly as in the attached smoke test.
-```
