@@ -1,0 +1,20 @@
+[project]
+name = "signalpost-agent"
+version = "1.0.0"
+description = "Norwegian company research agent: organisation number in, evidence-backed profile out"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+signalpost = "signalpost.__main__:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["signalpost", "signalpost.sources"]
+
+[tool.setuptools.package-data]
+signalpost = ["site_template.html"]

@@ -1,0 +1,233 @@
+{
+  "agent": "signalpost-agent/1.0.0",
+  "schema_version": "signalpost-envelope/1.0",
+  "run_id": "batch-1000-run1",
+  "started_at": "2026-10-12T19:26:37Z",
+  "completed_at": "2026-10-12T19:37:13Z",
+  "runtime_seconds": 641.8,
+  "expected_count": 1000,
+  "input": {
+    "source": "data/batch-1000.jsonl",
+    "received": 1000,
+    "unique": 1000,
+    "duplicates_collapsed": 0,
+    "invalid_organisation_numbers": []
+  },
+  "emitted_envelopes": 1000,
+  "resumed_profiles": 0,
+  "profiles_fetched_this_run": 1000,
+  "status_counts": {
+    "available": 1000
+  },
+  "section_availability": {
+    "legal_identity": {
+      "available": 1000
+    },
+    "annual_accounts": {
+      "available": 998,
+      "failed": 2
+    },
+    "leadership": {
+      "available": 1000
+    },
+    "workplaces": {
+      "available": 776,
+      "not_available": 224
+    },
+    "group_structure": {
+      "available": 1000
+    },
+    "official_website": {
+      "not_available": 710,
+      "available": 139,
+      "blocked": 15,
+      "ambiguous": 136
+    },
+    "company_profiles": {
+      "not_available": 921,
+      "available": 79
+    },
+    "contact": {
+      "not_available": 920,
+      "available": 80
+    },
+    "hiring": {
+      "blocked": 871,
+      "available": 26,
+      "not_available": 103
+    },
+    "public_activity": {
+      "available": 1000
+    }
+  },
+  "coverage": {
+    "companies_with_family": {
+      "annual_accounts": 998,
+      "company_profiles": 79,
+      "contact": 80,
+      "group_structure": 1000,
+      "hiring": 26,
+      "leadership": 1000,
+      "legal_identity": 1000,
+      "official_website": 139,
+      "public_activity": 1000,
+      "workplaces": 776
+    },
+    "published_claims_by_family": {
+      "annual_accounts": 54163,
+      "company_profiles": 152,
+      "contact": 116,
+      "group_structure": 1155,
+      "hiring": 26,
+      "leadership": 3969,
+      "legal_identity": 15876,
+      "official_website": 347,
+      "public_activity": 1133,
+      "workplaces": 1600
+    },
+    "published_claims_by_field": {
+      "accounts_filing": 2772,
+      "annual_result": 2772,
+      "business_address": 1000,
+      "careers_page": 26,
+      "cash": 2638,
+      "company_description": 79,
+      "company_news_item": 133,
+      "company_status": 1000,
+      "contact_email": 57,
+      "contact_phone": 59,
+      "current_assets": 2761,
+      "employees_registered": 155,
+      "equity": 2769,
+      "fixed_assets": 2662,
+      "founded_date": 989,
+      "group_parent": 53,
+      "group_ultimate_parent": 18,
+      "industry": 999,
+      "industry_secondary": 5,
+      "institutional_sector": 980,
+      "inventory": 794,
+      "investments": 1187,
+      "latest_accounts_year": 1000,
+      "legal_form": 1000,
+      "legal_name": 1000,
+      "long_term_debt": 2191,
+      "net_financial_items": 2531,
+      "official_website": 129,
+      "operating_costs": 2707,
+      "operating_result": 2714,
+      "organisation_number": 1000,
+      "paid_in_equity": 2686,
+      "part_of_group": 1000,
+      "postal_address": 242,
+      "previous_names": 225,
+      "profit_before_tax": 2726,
+      "public_brand": 19,
+      "receivables": 2311,
+      "register_memberships": 1000,
+      "registered_activity": 673,
+      "registered_date": 1000,
+      "registered_email": 241,
+      "registered_phone": 323,
+      "registered_website": 116,
+      "registered_workplace": 824,
+      "registered_workplace_count": 776,
+      "registry_updates": 1000,
+      "related_group_website": 10,
+      "retained_earnings": 2660,
+      "revenue": 2208,
+      "role_holder": 3969,
+      "sales_revenue": 1634,
+      "share_capital": 935,
+      "short_term_debt": 2583,
+      "social_profile": 130,
+      "statutory_purpose": 974,
+      "subsidiary": 60,
+      "subsidiary_count": 24,
+      "tax_expense": 1935,
+      "total_assets": 2772,
+      "total_debt": 2745,
+      "total_result": 1405,
+      "vat_registered": 1000,
+      "website_title": 129,
+      "wikidata_item": 12,
+      "wikipedia_article": 10
+    },
+    "published_claims_total": 78537,
+    "claims_per_company_mean": 78.5,
+    "evidence_records_total": 79725
+  },
+  "website_identity_gate": {
+    "not_available": 710,
+    "available": 129,
+    "ambiguous": 146,
+    "blocked": 15
+  },
+  "refresh": {
+    "compared_with_previous": 0,
+    "first_run": 1000,
+    "changes_total": 0,
+    "companies_with_changes": 0,
+    "change_types": {},
+    "carried_forward_claims": 0,
+    "state_dir": "out\\batch-1000\\state",
+    "previous_source": null
+  },
+  "operations": {
+    "requests": 6805,
+    "request_budget": 20000,
+    "requests_per_company_mean": 6.8,
+    "requests_by_source_class": {
+      "company_owned": 1711,
+      "official_registry": 5074,
+      "open_knowledge_base": 17,
+      "public_job_board": 3
+    },
+    "dns_lookups": 1454,
+    "bytes": 116111996,
+    "p50_ms": 926,
+    "p95_ms": 2211,
+    "company_runtime_p50_ms": 5761,
+    "company_runtime_p95_ms": 21660,
+    "time_budget_minutes": 40.0,
+    "within_time_budget": true,
+    "within_request_budget": true,
+    "third_party_cost_usd": 0.0,
+    "models": [],
+    "workers": 16
+  },
+  "modules_enabled": {
+    "website": true,
+    "nav_jobs": true,
+    "guess_domains": true,
+    "registry_updates": true,
+    "account_history": false
+  },
+  "registry": {
+    "identity_anchor": "live Enhetsregisteret API, exact organisation-number lookup"
+  },
+  "errors": {
+    "website:blocked": 15,
+    "website:unreachable": 73,
+    "financials:source_error": 2
+  },
+  "interrupted": false,
+  "expected_count_matches": true,
+  "validation": {
+    "passed": true,
+    "checks": {
+      "exact_expected_count": true,
+      "one_envelope_per_input_in_order": true,
+      "unique_organisation_numbers": true,
+      "all_states_terminal": true,
+      "all_claim_states_valid": true,
+      "every_published_claim_has_source_and_retrieval_time": true,
+      "every_financial_value_traceable_to_its_source_span": true,
+      "every_financial_claim_has_reporting_period": true,
+      "zero_silent_drops": true
+    },
+    "problems": [],
+    "unsupported_claims": 0,
+    "untraceable_financial_values": 0
+  }
+}

@@ -1,0 +1,383 @@
+{
+  "corpus": "Synthetic old/new source snapshots in the Builderr refresh-fixture format. No network is used.",
+  "profiles": 1,
+  "modules": [
+    "financials",
+    "locations",
+    "registry_live",
+    "roles"
+  ],
+  "old_requests": 4,
+  "new_requests": 4,
+  "expected_changes": 3,
+  "observed_changes": 3,
+  "claim_level_events": 9,
+  "true_positive": 3,
+  "false_positive": 0,
+  "false_negative": 0,
+  "precision": 1.0,
+  "recall": 1.0,
+  "evidence_complete": true,
+  "idempotent_rerun": true,
+  "prior_evidence_preserved": true,
+  "qualification_passed": true,
+  "events": [
+    {
+      "id": "ch-5489df869ea9",
+      "organisation_number": "923609016",
+      "change_type": "changed_annual_result",
+      "kind": "changed",
+      "field": "annual_result",
+      "key": "accounts.SELSKAP.2024.annual_result",
+      "family": "annual_accounts",
+      "group": "financials.records",
+      "materiality": "high",
+      "summary": "Annual result 2024: 8 → 9",
+      "old_value": 8,
+      "new_value": 9,
+      "previous_observed_at": "2026-10-12T19:38:09Z",
+      "detected_at": "2026-10-12T19:38:09Z",
+      "source_url": "https://data.brreg.no/regnskapsregisteret/regnskap/923609016",
+      "retrieved_at": "2026-08-02T00:00:00Z",
+      "effective_at": "2024-12-31",
+      "source_class": "official_annual_accounts",
+      "old_content_sha256": "f0aec87d4fc9def45e51ee70200c782386434a30fca4781c206dbf7dfaefa0aa",
+      "new_content_sha256": "569596e895e8c7ada14c35db826fba3e4df27b50ff08e80ea2b0edb5cb2ee0e8",
+      "old_evidence": [
+        {
+          "id": "ev-9f8289c20b4b",
+          "source_url": "https://data.brreg.no/regnskapsregisteret/regnskap/923609016",
+          "source_class": "official_annual_accounts",
+          "source_name": "Brønnøysund Regnskapsregisteret",
+          "licence": "NLOD 2.0 (Norwegian Licence for Open Government Data)",
+          "http_status": 200,
+          "retrieved_at": "2026-08-01T00:00:00Z",
+          "effective_at": "2024-12-31",
+          "content_sha256": "f0aec87d4fc9def45e51ee70200c782386434a30fca4781c206dbf7dfaefa0aa",
+          "claim_span": "regnskap[id=1, SELSKAP, 2024-01-01..2024-12-31].resultatregnskapResultat.aarsresultat: 8",
+          "extraction_method": "json_path"
+        }
+      ],
+      "new_evidence_ids": [
+        "ev-ec4728468d44"
+      ]
+    },
+    {
+      "id": "ch-0cde5fded52e",
+      "organisation_number": "923609016",
+      "change_type": "changed_equity",
+      "kind": "changed",
+      "field": "equity",
+      "key": "accounts.SELSKAP.2024.equity",
+      "family": "annual_accounts",
+      "group": "financials.records",
+      "materiality": "high",
+      "summary": "Total equity 2024: 30 → 35",
+      "old_value": 30,
+      "new_value": 35,
+      "previous_observed_at": "2026-10-12T19:38:09Z",
+      "detected_at": "2026-10-12T19:38:09Z",
+      "source_url": "https://data.brreg.no/regnskapsregisteret/regnskap/923609016",
+      "retrieved_at": "2026-08-02T00:00:00Z",
+      "effective_at": "2024-12-31",
+      "source_class": "official_annual_accounts",
+      "old_content_sha256": "f0aec87d4fc9def45e51ee70200c782386434a30fca4781c206dbf7dfaefa0aa",
+      "new_content_sha256": "569596e895e8c7ada14c35db826fba3e4df27b50ff08e80ea2b0edb5cb2ee0e8",
+      "old_evidence": [
+        {
+          "id": "ev-b0c4350b6b8c",
+          "source_url": "https://data.brreg.no/regnskapsregisteret/regnskap/923609016",
+          "source_class": "official_annual_accounts",
+          "source_name": "Brønnøysund Regnskapsregisteret",
+          "licence": "NLOD 2.0 (Norwegian Licence for Open Government Data)",
+          "http_status": 200,
+          "retrieved_at": "2026-08-01T00:00:00Z",
+          "effective_at": "2024-12-31",
+          "content_sha256": "f0aec87d4fc9def45e51ee70200c782386434a30fca4781c206dbf7dfaefa0aa",
+          "claim_span": "regnskap[id=1, SELSKAP, 2024-01-01..2024-12-31].egenkapitalGjeld.egenkapital.sumEgenkapital: 30",
+          "extraction_method": "json_path"
+        }
+      ],
+      "new_evidence_ids": [
+        "ev-9e718c9cfa62"
+      ]
+    },
+    {
+      "id": "ch-0ae128e4dbcf",
+      "organisation_number": "923609016",
+      "change_type": "changed_operating_result",
+      "kind": "changed",
+      "field": "operating_result",
+      "key": "accounts.SELSKAP.2024.operating_result",
+      "family": "annual_accounts",
+      "group": "financials.records",
+      "materiality": "high",
+      "summary": "Operating result 2024: 10 → 11",
+      "old_value": 10,
+      "new_value": 11,
+      "previous_observed_at": "2026-10-12T19:38:09Z",
+      "detected_at": "2026-10-12T19:38:09Z",
+      "source_url": "https://data.brreg.no/regnskapsregisteret/regnskap/923609016",
+      "retrieved_at": "2026-08-02T00:00:00Z",
+      "effective_at": "2024-12-31",
+      "source_class": "official_annual_accounts",
+      "old_content_sha256": "f0aec87d4fc9def45e51ee70200c782386434a30fca4781c206dbf7dfaefa0aa",
+      "new_content_sha256": "569596e895e8c7ada14c35db826fba3e4df27b50ff08e80ea2b0edb5cb2ee0e8",
+      "old_evidence": [
+        {
+          "id": "ev-9f33237a7840",
+          "source_url": "https://data.brreg.no/regnskapsregisteret/regnskap/923609016",
+          "source_class": "official_annual_accounts",
+          "source_name": "Brønnøysund Regnskapsregisteret",
+          "licence": "NLOD 2.0 (Norwegian Licence for Open Government Data)",
+          "http_status": 200,
+          "retrieved_at": "2026-08-01T00:00:00Z",
+          "effective_at": "2024-12-31",
+          "content_sha256": "f0aec87d4fc9def45e51ee70200c782386434a30fca4781c206dbf7dfaefa0aa",
+          "claim_span": "regnskap[id=1, SELSKAP, 2024-01-01..2024-12-31].resultatregnskapResultat.driftsresultat.driftsresultat: 10",
+          "extraction_method": "json_path"
+        }
+      ],
+      "new_evidence_ids": [
+        "ev-667a022793cc"
+      ]
+    },
+    {
+      "id": "ch-6951d526b4f2",
+      "organisation_number": "923609016",
+      "change_type": "changed_revenue",
+      "kind": "changed",
+      "field": "revenue",
+      "key": "accounts.SELSKAP.2024.revenue",
+      "family": "annual_accounts",
+      "group": "financials.records",
+      "materiality": "high",
+      "summary": "Total operating revenue 2024: 100 → 120",
+      "old_value": 100,
+      "new_value": 120,
+      "previous_observed_at": "2026-10-12T19:38:09Z",
+      "detected_at": "2026-10-12T19:38:09Z",
+      "source_url": "https://data.brreg.no/regnskapsregisteret/regnskap/923609016",
+      "retrieved_at": "2026-08-02T00:00:00Z",
+      "effective_at": "2024-12-31",
+      "source_class": "official_annual_accounts",
+      "old_content_sha256": "f0aec87d4fc9def45e51ee70200c782386434a30fca4781c206dbf7dfaefa0aa",
+      "new_content_sha256": "569596e895e8c7ada14c35db826fba3e4df27b50ff08e80ea2b0edb5cb2ee0e8",
+      "old_evidence": [
+        {
+          "id": "ev-8061e76b0f79",
+          "source_url": "https://data.brreg.no/regnskapsregisteret/regnskap/923609016",
+          "source_class": "official_annual_accounts",
+          "source_name": "Brønnøysund Regnskapsregisteret",
+          "licence": "NLOD 2.0 (Norwegian Licence for Open Government Data)",
+          "http_status": 200,
+          "retrieved_at": "2026-08-01T00:00:00Z",
+          "effective_at": "2024-12-31",
+          "content_sha256": "f0aec87d4fc9def45e51ee70200c782386434a30fca4781c206dbf7dfaefa0aa",
+          "claim_span": "regnskap[id=1, SELSKAP, 2024-01-01..2024-12-31].resultatregnskapResultat.driftsresultat.driftsinntekter.sumDriftsinntekter: 100",
+          "extraction_method": "json_path"
+        }
+      ],
+      "new_evidence_ids": [
+        "ev-0f56c1b037d2"
+      ]
+    },
+    {
+      "id": "ch-037ddfd68a36",
+      "organisation_number": "923609016",
+      "change_type": "changed_total_assets",
+      "kind": "changed",
+      "field": "total_assets",
+      "key": "accounts.SELSKAP.2024.total_assets",
+      "family": "annual_accounts",
+      "group": "financials.records",
+      "materiality": "high",
+      "summary": "Total assets 2024: 80 → 90",
+      "old_value": 80,
+      "new_value": 90,
+      "previous_observed_at": "2026-10-12T19:38:09Z",
+      "detected_at": "2026-10-12T19:38:09Z",
+      "source_url": "https://data.brreg.no/regnskapsregisteret/regnskap/923609016",
+      "retrieved_at": "2026-08-02T00:00:00Z",
+      "effective_at": "2024-12-31",
+      "source_class": "official_annual_accounts",
+      "old_content_sha256": "f0aec87d4fc9def45e51ee70200c782386434a30fca4781c206dbf7dfaefa0aa",
+      "new_content_sha256": "569596e895e8c7ada14c35db826fba3e4df27b50ff08e80ea2b0edb5cb2ee0e8",
+      "old_evidence": [
+        {
+          "id": "ev-8a4339b73081",
+          "source_url": "https://data.brreg.no/regnskapsregisteret/regnskap/923609016",
+          "source_class": "official_annual_accounts",
+          "source_name": "Brønnøysund Regnskapsregisteret",
+          "licence": "NLOD 2.0 (Norwegian Licence for Open Government Data)",
+          "http_status": 200,
+          "retrieved_at": "2026-08-01T00:00:00Z",
+          "effective_at": "2024-12-31",
+          "content_sha256": "f0aec87d4fc9def45e51ee70200c782386434a30fca4781c206dbf7dfaefa0aa",
+          "claim_span": "regnskap[id=1, SELSKAP, 2024-01-01..2024-12-31].eiendeler.sumEiendeler: 80",
+          "extraction_method": "json_path"
+        }
+      ],
+      "new_evidence_ids": [
+        "ev-4fb98a490d4b"
+      ]
+    },
+    {
+      "id": "ch-adabe01d914c",
+      "organisation_number": "923609016",
+      "change_type": "changed_total_debt",
+      "kind": "changed",
+      "field": "total_debt",
+      "key": "accounts.SELSKAP.2024.total_debt",
+      "family": "annual_accounts",
+      "group": "financials.records",
+      "materiality": "high",
+      "summary": "Total liabilities 2024: 50 → 55",
+      "old_value": 50,
+      "new_value": 55,
+      "previous_observed_at": "2026-10-12T19:38:09Z",
+      "detected_at": "2026-10-12T19:38:09Z",
+      "source_url": "https://data.brreg.no/regnskapsregisteret/regnskap/923609016",
+      "retrieved_at": "2026-08-02T00:00:00Z",
+      "effective_at": "2024-12-31",
+      "source_class": "official_annual_accounts",
+      "old_content_sha256": "f0aec87d4fc9def45e51ee70200c782386434a30fca4781c206dbf7dfaefa0aa",
+      "new_content_sha256": "569596e895e8c7ada14c35db826fba3e4df27b50ff08e80ea2b0edb5cb2ee0e8",
+      "old_evidence": [
+        {
+          "id": "ev-f35d209b5ac1",
+          "source_url": "https://data.brreg.no/regnskapsregisteret/regnskap/923609016",
+          "source_class": "official_annual_accounts",
+          "source_name": "Brønnøysund Regnskapsregisteret",
+          "licence": "NLOD 2.0 (Norwegian Licence for Open Government Data)",
+          "http_status": 200,
+          "retrieved_at": "2026-08-01T00:00:00Z",
+          "effective_at": "2024-12-31",
+          "content_sha256": "f0aec87d4fc9def45e51ee70200c782386434a30fca4781c206dbf7dfaefa0aa",
+          "claim_span": "regnskap[id=1, SELSKAP, 2024-01-01..2024-12-31].egenkapitalGjeld.gjeldOversikt.sumGjeld: 50",
+          "extraction_method": "json_path"
+        }
+      ],
+      "new_evidence_ids": [
+        "ev-2e52377ca7ac"
+      ]
+    },
+    {
+      "id": "ch-4191a3237943",
+      "organisation_number": "923609016",
+      "change_type": "ended_role",
+      "kind": "removed",
+      "field": "role_holder",
+      "key": "leadership.DAGL.kari-nordmann",
+      "family": "leadership",
+      "group": "roles.roles",
+      "materiality": "high",
+      "summary": "No longer listed, managing director / ceo: Kari Nordmann",
+      "old_value": {
+        "name": "Kari Nordmann",
+        "role": "Daglig leder",
+        "role_english": "Managing director / CEO",
+        "role_code": "DAGL",
+        "holder_type": "person",
+        "role_group_last_changed": "2026-07-20"
+      },
+      "new_value": null,
+      "previous_observed_at": "2026-10-12T19:38:09Z",
+      "detected_at": "2026-10-12T19:38:09Z",
+      "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016/roller",
+      "retrieved_at": "2026-08-01T00:00:00Z",
+      "effective_at": "2026-07-20",
+      "source_class": "official_registry",
+      "old_content_sha256": "e025de48c7cb1a4abedcd8b131c306e1a7978fc2f0d43924af8229675b892ba5",
+      "new_content_sha256": null,
+      "old_evidence": [
+        {
+          "id": "ev-c879c5dab22c",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016/roller",
+          "source_class": "official_registry",
+          "source_name": "Brønnøysund Enhetsregisteret (roles)",
+          "licence": "NLOD 2.0 (Norwegian Licence for Open Government Data)",
+          "http_status": 200,
+          "retrieved_at": "2026-08-01T00:00:00Z",
+          "effective_at": "2026-07-20",
+          "content_sha256": "e025de48c7cb1a4abedcd8b131c306e1a7978fc2f0d43924af8229675b892ba5",
+          "claim_span": "rollegrupper[DAGL].roller: {\"navn\": \"Kari Nordmann\", \"sistEndret\": \"2026-07-20\", \"type\": \"DAGL\"}",
+          "extraction_method": "json_path"
+        }
+      ],
+      "new_evidence_ids": []
+    },
+    {
+      "id": "ch-ae61956514a8",
+      "organisation_number": "923609016",
+      "change_type": "new_role",
+      "kind": "added",
+      "field": "role_holder",
+      "key": "leadership.DAGL.ola-hansen",
+      "family": "leadership",
+      "group": "roles.roles",
+      "materiality": "high",
+      "summary": "New managing director / ceo: Ola Hansen",
+      "old_value": null,
+      "new_value": {
+        "name": "Ola Hansen",
+        "role": "Daglig leder",
+        "role_english": "Managing director / CEO",
+        "role_code": "DAGL",
+        "holder_type": "person",
+        "role_group_last_changed": "2026-07-20"
+      },
+      "previous_observed_at": null,
+      "detected_at": "2026-10-12T19:38:09Z",
+      "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016/roller",
+      "retrieved_at": "2026-08-02T00:00:00Z",
+      "effective_at": "2026-07-20",
+      "source_class": "official_registry",
+      "old_content_sha256": null,
+      "new_content_sha256": "dec6090665e5354c43c2ed70a381927e606789562d3845bc5c93a77a3fcd20b7",
+      "old_evidence": [],
+      "new_evidence_ids": [
+        "ev-01600695d74c"
+      ]
+    },
+    {
+      "id": "ch-6b0d075db0e2",
+      "organisation_number": "923609016",
+      "change_type": "changed_employee_count",
+      "kind": "changed",
+      "field": "employees_registered",
+      "key": "identity.employees",
+      "family": "legal_identity",
+      "group": "registry.employees",
+      "materiality": "medium",
+      "summary": "Registered employees: 2 → 3",
+      "old_value": 2,
+      "new_value": 3,
+      "previous_observed_at": "2026-10-12T19:38:09Z",
+      "detected_at": "2026-10-12T19:38:09Z",
+      "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016",
+      "retrieved_at": "2026-08-02T00:00:00Z",
+      "effective_at": "2026-08-02T00:00:00Z",
+      "source_class": "official_registry",
+      "old_content_sha256": "3bc236cb0f71682099b95fd198df83b2c55f210a65a36533d5d0baecb30bed5e",
+      "new_content_sha256": "12a32f41a9d6cf574d377ce1d48e18a85605abdc2a1b454fc111b71b793b12be",
+      "old_evidence": [
+        {
+          "id": "ev-973bc2e9887f",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016",
+          "source_class": "official_registry",
+          "source_name": "Brønnøysund Enhetsregisteret",
+          "licence": "NLOD 2.0 (Norwegian Licence for Open Government Data)",
+          "http_status": 200,
+          "retrieved_at": "2026-08-01T00:00:00Z",
+          "content_sha256": "3bc236cb0f71682099b95fd198df83b2c55f210a65a36533d5d0baecb30bed5e",
+          "claim_span": "antallAnsatte: 2",
+          "extraction_method": "json_path"
+        }
+      ],
+      "new_evidence_ids": [
+        "ev-2a58f31bf787"
+      ]
+    }
+  ]
+}

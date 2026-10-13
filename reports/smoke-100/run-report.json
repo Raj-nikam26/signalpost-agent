@@ -1,0 +1,225 @@
+{
+  "agent": "signalpost-agent/1.0.0",
+  "schema_version": "signalpost-envelope/1.0",
+  "run_id": "smoke-100-run1",
+  "started_at": "2026-10-12T19:18:11Z",
+  "completed_at": "2026-10-12T19:22:14Z",
+  "runtime_seconds": 244.0,
+  "expected_count": 100,
+  "input": {
+    "source": "data/smoke-100.jsonl",
+    "received": 100,
+    "unique": 100,
+    "duplicates_collapsed": 0,
+    "invalid_organisation_numbers": []
+  },
+  "emitted_envelopes": 100,
+  "resumed_profiles": 0,
+  "profiles_fetched_this_run": 100,
+  "status_counts": {
+    "available": 100
+  },
+  "section_availability": {
+    "legal_identity": {
+      "available": 100
+    },
+    "annual_accounts": {
+      "available": 100
+    },
+    "leadership": {
+      "available": 100
+    },
+    "workplaces": {
+      "not_available": 39,
+      "available": 61
+    },
+    "group_structure": {
+      "available": 100
+    },
+    "official_website": {
+      "not_available": 75,
+      "ambiguous": 15,
+      "available": 10
+    },
+    "company_profiles": {
+      "not_available": 95,
+      "available": 5
+    },
+    "contact": {
+      "not_available": 93,
+      "available": 7
+    },
+    "hiring": {
+      "blocked": 92,
+      "not_available": 6,
+      "available": 2
+    },
+    "public_activity": {
+      "available": 100
+    }
+  },
+  "coverage": {
+    "companies_with_family": {
+      "annual_accounts": 100,
+      "company_profiles": 5,
+      "contact": 7,
+      "group_structure": 100,
+      "hiring": 2,
+      "leadership": 100,
+      "legal_identity": 100,
+      "official_website": 10,
+      "public_activity": 100,
+      "workplaces": 61
+    },
+    "published_claims_by_family": {
+      "annual_accounts": 5704,
+      "company_profiles": 7,
+      "contact": 7,
+      "group_structure": 113,
+      "hiring": 2,
+      "leadership": 389,
+      "legal_identity": 1563,
+      "official_website": 21,
+      "public_activity": 100,
+      "workplaces": 125
+    },
+    "published_claims_by_field": {
+      "accounts_filing": 289,
+      "accounts_history_years": 100,
+      "annual_result": 289,
+      "business_address": 99,
+      "careers_page": 2,
+      "cash": 270,
+      "company_description": 3,
+      "company_status": 100,
+      "contact_email": 2,
+      "contact_phone": 5,
+      "current_assets": 288,
+      "employees_registered": 12,
+      "equity": 289,
+      "fixed_assets": 276,
+      "founded_date": 99,
+      "group_parent": 3,
+      "industry": 100,
+      "industry_secondary": 1,
+      "institutional_sector": 98,
+      "inventory": 56,
+      "investments": 143,
+      "latest_accounts_year": 100,
+      "legal_form": 100,
+      "legal_name": 100,
+      "long_term_debt": 228,
+      "net_financial_items": 265,
+      "official_website": 8,
+      "operating_costs": 286,
+      "operating_result": 286,
+      "organisation_number": 100,
+      "paid_in_equity": 282,
+      "part_of_group": 100,
+      "postal_address": 27,
+      "previous_names": 19,
+      "profit_before_tax": 287,
+      "receivables": 235,
+      "register_memberships": 100,
+      "registered_activity": 64,
+      "registered_date": 100,
+      "registered_email": 18,
+      "registered_phone": 29,
+      "registered_website": 6,
+      "registered_workplace": 64,
+      "registered_workplace_count": 61,
+      "registry_updates": 100,
+      "related_group_website": 2,
+      "retained_earnings": 280,
+      "revenue": 205,
+      "role_holder": 389,
+      "sales_revenue": 141,
+      "share_capital": 94,
+      "short_term_debt": 258,
+      "social_profile": 7,
+      "statutory_purpose": 97,
+      "subsidiary": 8,
+      "subsidiary_count": 2,
+      "tax_expense": 214,
+      "total_assets": 289,
+      "total_debt": 284,
+      "total_result": 164,
+      "vat_registered": 100,
+      "website_title": 8
+    },
+    "published_claims_total": 8031,
+    "claims_per_company_mean": 80.3,
+    "evidence_records_total": 8166
+  },
+  "website_identity_gate": {
+    "not_available": 75,
+    "ambiguous": 17,
+    "available": 8
+  },
+  "refresh": {
+    "compared_with_previous": 0,
+    "first_run": 100,
+    "changes_total": 0,
+    "companies_with_changes": 0,
+    "change_types": {},
+    "carried_forward_claims": 0,
+    "state_dir": "out\\smoke-100\\state",
+    "previous_source": null
+  },
+  "operations": {
+    "requests": 747,
+    "request_budget": 2000,
+    "requests_per_company_mean": 7.47,
+    "requests_by_source_class": {
+      "company_owned": 138,
+      "official_annual_accounts": 100,
+      "official_registry": 504,
+      "open_knowledge_base": 2,
+      "public_job_board": 3
+    },
+    "dns_lookups": 157,
+    "bytes": 7069461,
+    "p50_ms": 942,
+    "p95_ms": 1700,
+    "company_runtime_p50_ms": 33274,
+    "company_runtime_p95_ms": 42992,
+    "time_budget_minutes": 40.0,
+    "within_time_budget": true,
+    "within_request_budget": true,
+    "third_party_cost_usd": 0.0,
+    "models": [],
+    "workers": 16
+  },
+  "modules_enabled": {
+    "website": true,
+    "nav_jobs": true,
+    "guess_domains": true,
+    "registry_updates": true,
+    "account_history": true
+  },
+  "registry": {
+    "identity_anchor": "live Enhetsregisteret API, exact organisation-number lookup"
+  },
+  "errors": {
+    "website:unreachable": 2
+  },
+  "interrupted": false,
+  "expected_count_matches": true,
+  "validation": {
+    "passed": true,
+    "checks": {
+      "exact_expected_count": true,
+      "one_envelope_per_input_in_order": true,
+      "unique_organisation_numbers": true,
+      "all_states_terminal": true,
+      "all_claim_states_valid": true,
+      "every_published_claim_has_source_and_retrieval_time": true,
+      "every_financial_value_traceable_to_its_source_span": true,
+      "every_financial_claim_has_reporting_period": true,
+      "zero_silent_drops": true
+    },
+    "problems": [],
+    "unsupported_claims": 0,
+    "untraceable_financial_values": 0
+  }
+}

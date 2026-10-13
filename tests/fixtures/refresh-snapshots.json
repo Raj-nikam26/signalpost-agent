@@ -1,0 +1,286 @@
+{
+ "corpus": "Synthetic old/new source snapshots in the Builderr refresh-fixture format. No network is used.",
+ "modules": [
+  "registry_live",
+  "financials",
+  "roles",
+  "locations"
+ ],
+ "profiles": [
+  {
+   "organisation_number": "923609016"
+  }
+ ],
+ "expected_changes": [
+  {
+   "organisation_number": "923609016",
+   "field": "registry.employees"
+  },
+  {
+   "organisation_number": "923609016",
+   "field": "financials.records"
+  },
+  {
+   "organisation_number": "923609016",
+   "field": "roles.roles"
+  }
+ ],
+ "snapshots": {
+  "old": {
+   "retrieved_at": "2026-08-01T00:00:00Z",
+   "effective_at": "2026-07-31T23:59:59Z",
+   "responses": {
+    "https://data.brreg.no/enhetsregisteret/api/enheter/923609016": {
+     "status": 200,
+     "body": {
+      "organisasjonsnummer": "923609016",
+      "navn": "Eksempel Bakeri AS",
+      "organisasjonsform": {
+       "kode": "AS",
+       "beskrivelse": "Aksjeselskap"
+      },
+      "antallAnsatte": 2,
+      "harRegistrertAntallAnsatte": true,
+      "hjemmeside": "example.no",
+      "sisteInnsendteAarsregnskap": "2024",
+      "konkurs": false,
+      "underAvvikling": false,
+      "erIKonsern": false,
+      "forretningsadresse": {
+       "adresse": [
+        "Storgata 1"
+       ],
+       "postnummer": "0155",
+       "poststed": "OSLO",
+       "kommune": "OSLO",
+       "landkode": "NO",
+       "land": "Norge"
+      },
+      "naeringskode1": {
+       "kode": "10.710",
+       "beskrivelse": "Produksjon av brød og ferske konditorvarer"
+      }
+     }
+    },
+    "https://data.brreg.no/regnskapsregisteret/regnskap/923609016": {
+     "status": 200,
+     "body": [
+      {
+       "id": 1,
+       "regnskapstype": "SELSKAP",
+       "valuta": "NOK",
+       "virksomhet": {
+        "organisasjonsnummer": "923609016"
+       },
+       "regnskapsperiode": {
+        "fraDato": "2024-01-01",
+        "tilDato": "2024-12-31"
+       },
+       "resultatregnskapResultat": {
+        "driftsresultat": {
+         "driftsinntekter": {
+          "sumDriftsinntekter": 100
+         },
+         "driftsresultat": 10
+        },
+        "aarsresultat": 8
+       },
+       "eiendeler": {
+        "sumEiendeler": 80
+       },
+       "egenkapitalGjeld": {
+        "egenkapital": {
+         "sumEgenkapital": 30
+        },
+        "gjeldOversikt": {
+         "sumGjeld": 50
+        }
+       }
+      }
+     ]
+    },
+    "https://data.brreg.no/enhetsregisteret/api/enheter/923609016/roller": {
+     "status": 200,
+     "body": {
+      "rollegrupper": [
+       {
+        "type": {
+         "kode": "DAGL",
+         "beskrivelse": "Daglig leder"
+        },
+        "sistEndret": "2026-07-20",
+        "roller": [
+         {
+          "type": {
+           "kode": "DAGL",
+           "beskrivelse": "Daglig leder"
+          },
+          "person": {
+           "fodselsdato": "1980-01-01",
+           "navn": {
+            "fornavn": "Kari",
+            "etternavn": "Nordmann"
+           }
+          }
+         }
+        ]
+       }
+      ]
+     }
+    },
+    "https://data.brreg.no/enhetsregisteret/api/underenheter?overordnetEnhet=923609016&size=100": {
+     "status": 200,
+     "body": {
+      "_embedded": {
+       "underenheter": [
+        {
+         "organisasjonsnummer": "973861883",
+         "navn": "EKSEMPEL BAKERI AS",
+         "beliggenhetsadresse": {
+          "adresse": [
+           "Storgata 1"
+          ],
+          "postnummer": "0155",
+          "poststed": "OSLO",
+          "kommune": "OSLO"
+         }
+        }
+       ]
+      },
+      "page": {
+       "totalElements": 1
+      }
+     }
+    }
+   }
+  },
+  "new": {
+   "retrieved_at": "2026-08-02T00:00:00Z",
+   "effective_at": "2026-08-01T23:59:59Z",
+   "responses": {
+    "https://data.brreg.no/enhetsregisteret/api/enheter/923609016": {
+     "status": 200,
+     "body": {
+      "organisasjonsnummer": "923609016",
+      "navn": "Eksempel Bakeri AS",
+      "organisasjonsform": {
+       "kode": "AS",
+       "beskrivelse": "Aksjeselskap"
+      },
+      "antallAnsatte": 3,
+      "harRegistrertAntallAnsatte": true,
+      "hjemmeside": "example.no",
+      "sisteInnsendteAarsregnskap": "2024",
+      "konkurs": false,
+      "underAvvikling": false,
+      "erIKonsern": false,
+      "forretningsadresse": {
+       "adresse": [
+        "Storgata 1"
+       ],
+       "postnummer": "0155",
+       "poststed": "OSLO",
+       "kommune": "OSLO",
+       "landkode": "NO",
+       "land": "Norge"
+      },
+      "naeringskode1": {
+       "kode": "10.710",
+       "beskrivelse": "Produksjon av brød og ferske konditorvarer"
+      }
+     }
+    },
+    "https://data.brreg.no/regnskapsregisteret/regnskap/923609016": {
+     "status": 200,
+     "body": [
+      {
+       "id": 1,
+       "regnskapstype": "SELSKAP",
+       "valuta": "NOK",
+       "virksomhet": {
+        "organisasjonsnummer": "923609016"
+       },
+       "regnskapsperiode": {
+        "fraDato": "2024-01-01",
+        "tilDato": "2024-12-31"
+       },
+       "resultatregnskapResultat": {
+        "driftsresultat": {
+         "driftsinntekter": {
+          "sumDriftsinntekter": 120
+         },
+         "driftsresultat": 11
+        },
+        "aarsresultat": 9
+       },
+       "eiendeler": {
+        "sumEiendeler": 90
+       },
+       "egenkapitalGjeld": {
+        "egenkapital": {
+         "sumEgenkapital": 35
+        },
+        "gjeldOversikt": {
+         "sumGjeld": 55
+        }
+       }
+      }
+     ]
+    },
+    "https://data.brreg.no/enhetsregisteret/api/enheter/923609016/roller": {
+     "status": 200,
+     "body": {
+      "rollegrupper": [
+       {
+        "type": {
+         "kode": "DAGL",
+         "beskrivelse": "Daglig leder"
+        },
+        "sistEndret": "2026-07-20",
+        "roller": [
+         {
+          "type": {
+           "kode": "DAGL",
+           "beskrivelse": "Daglig leder"
+          },
+          "person": {
+           "fodselsdato": "1980-01-01",
+           "navn": {
+            "fornavn": "Ola",
+            "etternavn": "Hansen"
+           }
+          }
+         }
+        ]
+       }
+      ]
+     }
+    },
+    "https://data.brreg.no/enhetsregisteret/api/underenheter?overordnetEnhet=923609016&size=100": {
+     "status": 200,
+     "body": {
+      "_embedded": {
+       "underenheter": [
+        {
+         "organisasjonsnummer": "973861883",
+         "navn": "EKSEMPEL BAKERI AS",
+         "beliggenhetsadresse": {
+          "adresse": [
+           "Storgata 1"
+          ],
+          "postnummer": "0155",
+          "poststed": "OSLO",
+          "kommune": "OSLO"
+         }
+        }
+       ]
+      },
+      "page": {
+       "totalElements": 1
+      }
+     }
+    }
+   }
+  }
+ }
+}
