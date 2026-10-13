@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Signalpost — Norwegian company register, sourced</title>
+<style>
+:root{
+  --paper:#f5f2eb;--surface:#fffdf8;--ink:#17191c;--ink2:#4a4f57;--ink3:#7b8089;--rule:#d9d3c5;--rule2:#ebe6da;
+  --accent:#0e5a4a;--accent-soft:#dcebe5;--warn:#8a5a06;--warn-soft:#f6e9c8;--bad:#a2261f;--bad-soft:#f5dcd8;--info:#2b4c7e;--info-soft:#dfe7f3;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  --mono:ui-monospace,"SF Mono","Cascadia Mono",Consolas,Menlo,monospace;
+}
+:root[data-theme="dark"]{
+  --paper:#111416;--surface:#181c1f;--ink:#ece8df;--ink2:#b4b0a6;--ink3:#86837b;--rule:#2e3438;--rule2:#22272a;
+  --accent:#6fc9b0;--accent-soft:#17302a;--warn:#e6bd62;--warn-soft:#33290f;--bad:#f0968f;--bad-soft:#3a1b18;--info:#9db9e6;--info-soft:#1a2535;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:70px}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 var(--sans);-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-underline-offset:2px}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:.93em;letter-spacing:-.01em}
+.muted{color:var(--ink3)} .small{font-size:12.5px}
+.caps{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3);font-weight:600}
+.mast{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--rule)}
+.mast-in{max-width:1240px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;text-decoration:none;color:var(--ink);font-family:var(--serif);font-size:21px;font-weight:600;letter-spacing:-.01em}
+.brand svg{width:22px;height:22px}
+.nav{display:flex;gap:2px}
+.nav a{padding:6px 10px;text-decoration:none;color:var(--ink2);font-weight:550;font-size:14px;border-bottom:2px solid transparent}
+.nav a.on{color:var(--ink);border-color:var(--accent)}
+.find{flex:1;min-width:210px;position:relative}
+.find input{width:100%;padding:8px 44px 8px 12px;background:var(--surface);border:1px solid var(--rule);border-radius:3px;color:var(--ink);font:inherit}
+.find kbd{position:absolute;right:9px;top:50%;transform:translateY(-50%);font:11px var(--mono);border:1px solid var(--rule);border-radius:3px;padding:1px 5px;color:var(--ink3)}
+.icon-btn{background:none;border:1px solid var(--rule);border-radius:3px;padding:6px 9px;cursor:pointer;line-height:1}
+main{max-width:1240px;margin:0 auto;padding:22px 20px 110px}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(26px,3.6vw,38px);line-height:1.12;letter-spacing:-.015em;margin:0 0 8px}
+h2{font-family:var(--serif);font-weight:600;font-size:21px;margin:0 0 12px;letter-spacing:-.01em}
+h3{font-size:13px;margin:0 0 8px}
+.lede{font-family:var(--serif);font-size:18px;line-height:1.5;color:var(--ink2);max-width:74ch;margin:0}
+.panel{background:var(--surface);border:1px solid var(--rule);padding:18px}
+.rule{border:0;border-top:1px solid var(--rule);margin:26px 0}
+.tag{display:inline-block;font-size:11px;font-weight:650;letter-spacing:.05em;text-transform:uppercase;padding:2px 6px;border:1px solid currentColor;border-radius:2px;white-space:nowrap;color:var(--ink3)}
+.tag.available{color:var(--accent);background:var(--accent-soft);border-color:transparent}
+.tag.ambiguous,.tag.blocked,.tag.medium{color:var(--warn);background:var(--warn-soft);border-color:transparent}
+.tag.failed,.tag.high{color:var(--bad);background:var(--bad-soft);border-color:transparent}
+.tag.info,.tag.low{color:var(--info);background:var(--info-soft);border-color:transparent}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));border:1px solid var(--rule);background:var(--surface);margin:20px 0}
+.kpi{padding:14px 16px;border-right:1px solid var(--rule2)}
+.kpi:last-child{border-right:0}
+.kpi b{display:block;font-family:var(--serif);font-size:28px;font-weight:600;line-height:1.1}
+.charts{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:16px;margin-bottom:22px}
+.bars{display:grid;gap:5px}
+.bar-row{display:grid;grid-template-columns:minmax(96px,150px) 1fr 46px;gap:8px;align-items:center;background:none;border:0;padding:2px 0;text-align:left;cursor:pointer;width:100%}
+.bar-row:hover .bar-fill{filter:brightness(1.15)}
+.bar-row.on .bar-label{color:var(--accent);font-weight:650}
+.bar-label{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{height:14px;background:var(--rule2);position:relative;display:block}
+.bar-fill{position:absolute;inset:0 auto 0 0;background:var(--accent);transition:width .35s ease}
+.bar-fill.alt{background:var(--ink3)}
+.histo{display:flex;align-items:flex-end;gap:4px;height:120px;margin-top:6px}
+.histo button{flex:1;background:var(--accent);border:0;min-height:2px;cursor:pointer;padding:0;opacity:.85}
+.histo button:hover,.histo button.on{opacity:1;outline:2px solid var(--ink);outline-offset:1px}
+.histo-x{display:flex;gap:4px;margin-top:4px}
+.histo-x span{flex:1;text-align:center;font:10px var(--mono);color:var(--ink3)}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 10px}
+.chip{background:var(--surface);border:1px solid var(--rule);border-radius:2px;padding:5px 10px;font-size:13px;cursor:pointer}
+.chip.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.chip[disabled]{opacity:.4;cursor:default}
+.chip .x{margin-left:6px;opacity:.7}
+.table-wrap{border:1px solid var(--rule);background:var(--surface);overflow-x:auto}
+table{border-collapse:collapse;width:100%}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--rule2);vertical-align:top}
+thead th{background:var(--surface);border-bottom:1px solid var(--rule);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);font-weight:650;white-space:nowrap}
+th button{background:none;border:0;padding:0;cursor:pointer;font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit}
+th button[aria-sort]{color:var(--ink)}
+td.r,th.r{text-align:right}
+table.list tbody tr{cursor:pointer}
+table.list tbody tr:hover{background:var(--rule2)}
+.co-name{font-weight:650;color:var(--ink);text-decoration:none}
+.dots{display:inline-flex;gap:3px;vertical-align:middle}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--rule);display:block}
+.dot.on{background:var(--accent)}
+.pager{display:flex;gap:10px;align-items:center;justify-content:flex-end;margin-top:12px}
+.tray{white-space:nowrap;position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 14px;display:flex;gap:12px;align-items:center;z-index:25;box-shadow:0 8px 30px rgba(0,0,0,.25);max-width:calc(100vw - 24px)}
+.tray a{color:var(--paper);font-weight:650}
+.tray button{background:none;border:1px solid currentColor;color:inherit;padding:3px 8px;cursor:pointer;border-radius:2px}
+.crumb{font-size:13px;margin-bottom:14px}
+.head-meta{display:flex;gap:8px 18px;flex-wrap:wrap;color:var(--ink2);font-size:14px;margin:6px 0 14px}
+.layout{display:grid;grid-template-columns:190px minmax(0,1fr);gap:34px;margin-top:22px}
+.toc{position:sticky;top:76px;align-self:start;display:grid;gap:1px;font-size:14px}
+.toc a{display:flex;justify-content:space-between;gap:8px;padding:6px 10px;text-decoration:none;color:var(--ink2);border-left:2px solid var(--rule)}
+.toc a.on{color:var(--ink);border-color:var(--accent);background:var(--surface);font-weight:600}
+.toc a .n{font:11px var(--mono);color:var(--ink3)}
+section.sec{padding:26px 0;border-top:1px solid var(--rule)}
+section.sec:first-child{border-top:0;padding-top:0}
+.sec-head{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:10px}
+.sec-head h2{margin:0}
+.prose p{font-family:var(--serif);font-size:17px;line-height:1.6;margin:.5em 0;max-width:76ch}
+.cite{font:600 11px var(--mono);vertical-align:super;margin-left:1px;padding:0 2px;background:none;border:0;color:var(--accent);cursor:pointer}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));border:1px solid var(--rule);background:var(--surface)}
+.tile{padding:13px 15px;border-right:1px solid var(--rule2);border-bottom:1px solid var(--rule2)}
+.tile b{display:block;font-family:var(--serif);font-size:22px;font-weight:600;line-height:1.2}
+.spark{display:flex;align-items:flex-end;gap:3px;height:22px;margin-top:6px}
+.spark i{flex:1;background:var(--accent);min-height:2px;display:block}
+.spark i.neg{background:var(--bad)}
+.facts{border-top:1px solid var(--rule2)}
+.fact{display:grid;grid-template-columns:minmax(150px,230px) minmax(0,1fr) auto;gap:4px 18px;padding:10px 0;border-bottom:1px solid var(--rule2);align-items:start}
+.fact .k{color:var(--ink2);font-size:14px}
+.fact .v{overflow-wrap:anywhere}
+.verify{background:none;border:1px solid var(--rule);border-radius:2px;padding:3px 8px;font-size:12px;cursor:pointer;color:var(--ink2);white-space:nowrap}
+.verify:hover{border-color:var(--accent);color:var(--accent)}
+.note{font-size:13px;color:var(--ink3);margin-top:2px}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:2px;overflow:hidden;flex-wrap:wrap}
+.seg button{background:var(--surface);border:0;border-right:1px solid var(--rule);padding:5px 10px;font-size:13px;cursor:pointer}
+.seg button.on{background:var(--ink);color:var(--paper)}
+.fin-chart{display:grid;gap:8px;margin:14px 0 6px}
+.fin-row{display:grid;grid-template-columns:86px 1fr 130px;gap:10px;align-items:center}
+.fin-track{height:22px;position:relative;background:var(--rule2);border:0;padding:0;cursor:pointer;display:block;width:100%}
+.fin-bar{position:absolute;top:0;bottom:0;background:var(--accent);transition:all .35s ease}
+.fin-bar.neg{background:var(--bad)}
+.fin-zero{position:absolute;top:-3px;bottom:-3px;width:1px;background:var(--ink)}
+.timeline{list-style:none;margin:0 0 14px;padding:0 0 0 14px;border-left:1px solid var(--rule)}
+.timeline li{position:relative;padding:0 0 14px 14px}
+.timeline li::before{content:"";position:absolute;left:-19px;top:6px;width:9px;height:9px;border-radius:50%;background:var(--surface);border:2px solid var(--accent)}
+.meter{display:inline-block;width:92px;height:8px;background:var(--rule);vertical-align:middle;position:relative}
+.meter i{position:absolute;inset:0 auto 0 0;background:var(--accent)}
+.btn{display:inline-block;background:var(--surface);border:1px solid var(--ink);color:var(--ink);padding:7px 13px;font-weight:600;font-size:14px;text-decoration:none;cursor:pointer;border-radius:2px}
+.btn.solid{background:var(--ink);color:var(--paper)}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(520px,100vw);background:var(--surface);border-left:1px solid var(--rule);z-index:41;transform:translateX(102%);transition:transform .25s ease;display:flex;flex-direction:column}
+.drawer.open{transform:none}
+.drawer header{padding:16px 18px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.drawer .body{padding:18px;overflow:auto}
+.ev{border:1px solid var(--rule);padding:13px;margin-bottom:12px}
+.span{font:13px/1.5 var(--mono);background:var(--paper);border-left:3px solid var(--accent);padding:9px 11px;margin:9px 0;overflow-wrap:anywhere;white-space:pre-wrap}
+dl.kv{display:grid;grid-template-columns:110px 1fr;gap:4px 10px;margin:0;font-size:13px}
+dl.kv dt{color:var(--ink3)} dl.kv dd{margin:0;overflow-wrap:anywhere}
+.cmp td,.cmp th{min-width:170px}
+.cmp tbody th{font-weight:600;font-size:14px}
+.cmp-bar{height:5px;background:var(--accent);margin-top:5px}
+.cmp-bar.neg{background:var(--bad)}
+.best{font-weight:700}
+.empty{padding:40px 16px;text-align:center;color:var(--ink3)}
+@media (max-width:960px){.charts{grid-template-columns:1fr}.layout{grid-template-columns:minmax(0,1fr);gap:14px}.toc{position:static;display:flex;overflow-x:auto;gap:0;border-bottom:1px solid var(--rule)}.toc a{border-left:0;border-bottom:2px solid transparent;white-space:nowrap}.toc a.on{border-color:var(--accent);background:none}.toc a .n{display:none}}
+@media (max-width:700px){
+ .mast-in{gap:10px;padding:8px 14px}.find{order:5;flex-basis:100%}.find kbd{display:none}main{padding:16px 14px 110px}
+ .fact{grid-template-columns:minmax(0,1fr)}.fin-row{grid-template-columns:52px 1fr 96px}
+ table.list thead{display:none}table.list tr{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 10px;padding:10px 12px;border-bottom:1px solid var(--rule2)}
+ table.list td{border:0;padding:0}table.list td.sel{grid-row:span 7}table.list td.r{text-align:left}
+ table.list td[data-l]::before{content:attr(data-l) " ";font:600 11px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<header class="mast"><div class="mast-in">
+  <a class="brand" href="#/" aria-label="Signalpost home">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 22V10"/><circle cx="12" cy="6.5" r="2.6" fill="var(--accent)" stroke="none"/><path d="M6.5 11.5a7.5 7.5 0 0 1 0-10M17.5 1.5a7.5 7.5 0 0 1 0 10"/></svg>
+    Signalpost
+  </a>
+  <nav class="nav" aria-label="Main"><a href="#/" data-nav="list">Register</a><a href="#/compare" data-nav="compare">Compare</a><a href="#/changes" data-nav="changes">Changes</a><a href="#/method" data-nav="method">Method</a></nav>
+  <div class="find"><input id="q" type="search" placeholder="Company, organisation number, municipality, industry" aria-label="Search the register" autocomplete="off"><kbd>/</kbd></div>
+  <button class="icon-btn" id="theme" title="Switch light and dark" aria-label="Switch light and dark">◐</button>
+</div></header>
+<main id="app"><div class="empty">Loading the register…</div></main>
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Evidence" aria-hidden="true"><header><div><div class="caps">Evidence</div><h2 id="drawer-title" style="margin:2px 0 0"></h2></div><button class="icon-btn" data-act="close-drawer" aria-label="Close evidence">✕</button></header><div class="body" id="drawer-body"></div></aside>
+<div id="tray"></div>
+<script src="data/index.js"></script>
+<script>
+"use strict";
+const INDEX = window.SIGNALPOST_INDEX || {companies:[],changes:[],meta:{}};
+const SECTIONS = [["legal_identity","Identity"],["annual_accounts","Accounts"],["leadership","Leadership"],["workplaces","Workplaces"],["official_website","Website"],["company_profiles","Profiles"],["hiring","Hiring"],["reviews","Reviews"],["public_activity","Activity"]];
+const cache = {};
+const store = {get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const S = {q:"",filters:{},sort:{key:"name",dir:1},page:0,compare:new Set(store.get("sp-compare",[])),metric:"revenue",company:null};
+const $ = (s,r=document)=>r.querySelector(s), $$ = (s,r=document)=>[...r.querySelectorAll(s)];
+const esc = v => String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const isUrl = u => /^https?:\/\//i.test(String(u||""));
+const link = (u,t) => isUrl(u) ? `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(t||String(u).replace(/^https?:\/\/(www\.)?/,"").replace(/\/$/,""))}</a>` : esc(t||u);
+const n0 = n => n==null ? "—" : Number(n).toLocaleString("en-GB");
+const day = t => esc(String(t||"").slice(0,10));
+const tag = (s,t) => `<span class="tag ${esc(s)}">${esc(t||String(s).replace(/_/g," "))}</span>`;
+function money(v,cur){ if(v==null) return "—"; const a=Math.abs(v), s=v<0?"−":""; cur=cur||"NOK";
+  if(a>=1e9) return `${s}${(a/1e9).toFixed(1)} bn ${cur}`; if(a>=1e6) return `${s}${(a/1e6).toFixed(1)} m ${cur}`; if(a>=1e3) return `${s}${(a/1e3).toFixed(0)} k ${cur}`; return `${s}${a.toFixed(0)} ${cur}`; }
+function loadCompany(org){ return new Promise((res,rej)=>{ if(cache[org]) return res(cache[org]);
+  window.__sp=window.__sp||{}; window.__sp[org]=d=>{cache[org]=d;res(d)};
+  const s=document.createElement("script"); s.src=`data/companies/${encodeURIComponent(org)}.js`; s.onerror=()=>rej(new Error("no profile")); document.head.appendChild(s); }); }
+const applyTheme = t => { document.documentElement.dataset.theme=t; store.set("sp-theme",t); };
+applyTheme(store.get("sp-theme", matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
+
+/* ---------- register: overview charts and table ---------- */
+const REV_BUCKETS = [["none",c=>c.revenue==null,"n/a"],["<1m",c=>c.revenue!=null&&c.revenue<1e6,"<1m"],["1–10m",c=>c.revenue>=1e6&&c.revenue<1e7,"1–10m"],["10–100m",c=>c.revenue>=1e7&&c.revenue<1e8,"10–100m"],["100m–1bn",c=>c.revenue>=1e8&&c.revenue<1e9,"0.1–1bn"],[">1bn",c=>c.revenue>=1e9,">1bn"]];
+const FLAGS = {changed:["Changed since last run",c=>c.changes>0],adverse:["Adverse status",c=>c.status&&c.status!=="active"],hiring:["Verified open roles",c=>c.jobs>0],unresolved:["Not resolved",c=>c.state!=="available"]};
+const COLS = [["name","Company",c=>String(c.name||"~").toLowerCase(),false],["municipality","Location",c=>String(c.municipality||"~"),false],["employees","Employees",c=>c.employees??-1,true],["revenue","Revenue",c=>c.revenue??-Infinity,true],["result","Result",c=>c.result??-Infinity,true],["coverage","Coverage",c=>(c.has||[]).length,true]];
+function passes(c){ const f=S.filters;
+  if(S.q){ const hay=[c.name,c.brand,c.org,c.municipality,c.industry,c.industry_code,c.form].join(" ").toLowerCase(); if(!S.q.toLowerCase().split(/\s+/).every(w=>hay.includes(w))) return false; }
+  if(f.section && !(c.has||[]).includes(f.section)) return false;
+  if(f.form && c.form!==f.form) return false;
+  if(f.rev && !REV_BUCKETS.find(b=>b[0]===f.rev)[1](c)) return false;
+  for(const k of Object.keys(FLAGS)) if(f[k] && !FLAGS[k][1](c)) return false;
+  return true; }
+function barList(rows,total,key,alt){ const max=Math.max(1,...rows.map(r=>r[1]));
+  return `<div class="bars">${rows.map(([label,count,value])=>`<button class="bar-row ${S.filters[key]===value?"on":""}" data-act="filter" data-k="${key}" data-v="${esc(value)}" title="Show these ${count} companies">
+    <span class="bar-label">${esc(label)}</span><span class="bar-track"><span class="bar-fill ${alt?"alt":""}" style="width:${(count/max*100).toFixed(1)}%"></span></span><span class="num small" style="text-align:right">${total?Math.round(count/total*100)+"%":count}</span></button>`).join("")}</div>`; }
+function viewRegister(){ const all=INDEX.companies, m=INDEX.meta||{}, rows=all.filter(passes);
+  const col=COLS.find(c=>c[0]===S.sort.key)||COLS[0]; rows.sort((a,b)=>{const x=col[2](a),y=col[2](b);return (x<y?-1:x>y?1:0)*S.sort.dir});
+  const per=40, pages=Math.max(1,Math.ceil(rows.length/per)); S.page=Math.max(0,Math.min(S.page,pages-1)); const shown=rows.slice(S.page*per,(S.page+1)*per);
+  const secRows=SECTIONS.map(([k,l])=>[l,all.filter(c=>(c.has||[]).includes(k)).length,k]);
+  const forms={}; all.forEach(c=>{ if(c.form) forms[c.form]=(forms[c.form]||0)+1; });
+  const formRows=Object.entries(forms).sort((a,b)=>b[1]-a[1]).slice(0,7).map(([k,v])=>[k,v,k]);
+  const hist=REV_BUCKETS.map(b=>[b[0],all.filter(b[1]).length,b[2]]), hmax=Math.max(1,...hist.map(h=>h[1]));
+  const active=Object.entries(S.filters).filter(([,v])=>v);
+  const label=(k,v)=>k==="section"?"Has "+(SECTIONS.find(s=>s[0]===v)||[,v])[1].toLowerCase():k==="form"?"Form "+v:k==="rev"?"Revenue "+v:FLAGS[k][0];
+  $("#app").innerHTML=`
+  <h1>The Norwegian company register, with a source for every fact.</h1>
+  <p class="lede">${n0(all.length)} companies researched from their organisation number. Each fact links to where it was found, when, and the exact text that supports it.</p>
+  <div class="kpis">
+    <div class="kpi"><span class="caps">Companies</span><b class="num">${n0(all.length)}</b></div>
+    <div class="kpi"><span class="caps">Published facts</span><b class="num">${n0(m.claims)}</b></div>
+    <div class="kpi"><span class="caps">Evidence records</span><b class="num">${n0(m.evidence)}</b></div>
+    <div class="kpi"><span class="caps">Verified websites</span><b class="num">${n0(all.filter(c=>c.website).length)}</b></div>
+    <div class="kpi"><span class="caps">Last run</span><b class="num" style="font-size:18px;padding-top:7px">${day(m.completed_at)}</b></div>
+    <div class="kpi"><span class="caps">External API cost</span><b class="num">$${esc(m.cost??0)}</b></div>
+  </div>
+  <div class="charts">
+    <div class="panel"><h3 class="caps">Coverage by section · click to filter</h3>${barList(secRows,all.length,"section")}</div>
+    <div class="panel"><h3 class="caps">Legal form</h3>${barList(formRows,all.length,"form",true)}</div>
+    <div class="panel"><h3 class="caps">Latest revenue, NOK</h3>
+      <div class="histo">${hist.map(([k,c])=>`<button class="${S.filters.rev===k?"on":""}" style="height:${Math.max(2,c/hmax*100)}%" data-act="filter" data-k="rev" data-v="${esc(k)}" title="${c} companies" aria-label="${esc(k)}: ${c} companies"></button>`).join("")}</div>
+      <div class="histo-x">${hist.map(h=>`<span>${esc(h[2])}</span>`).join("")}</div></div>
+  </div>
+  <div class="tools">
+    ${Object.entries(FLAGS).map(([k,[l]])=>`<button class="chip ${S.filters[k]?"on":""}" data-act="filter" data-k="${k}" data-v="1">${esc(l)}</button>`).join("")}
+    ${active.filter(([k])=>!FLAGS[k]).map(([k,v])=>`<button class="chip on" data-act="filter" data-k="${k}" data-v="${esc(v)}">${esc(label(k,v))}<span class="x">✕</span></button>`).join("")}
+    ${active.length||S.q?`<button class="chip" data-act="clear">Clear all</button>`:""}
+    <span class="muted small" style="margin-left:auto">${n0(rows.length)} of ${n0(all.length)} companies</span>
+  </div>
+  <div class="table-wrap"><table class="list"><thead><tr><th></th>${COLS.map(([k,l,,r])=>`<th class="${r?"r":""}"><button data-act="sort" data-k="${k}" ${S.sort.key===k?`aria-sort="${S.sort.dir>0?"ascending":"descending"}"`:""}>${l}${S.sort.key===k?(S.sort.dir>0?" ↑":" ↓"):""}</button></th>`).join("")}<th>Signals</th></tr></thead><tbody>
+  ${shown.map(c=>`<tr data-act="open" data-org="${esc(c.org)}">
+    <td class="sel"><input type="checkbox" data-act="cmp" data-org="${esc(c.org)}" ${S.compare.has(c.org)?"checked":""} aria-label="Add ${esc(c.name||c.org)} to comparison"></td>
+    <td><a class="co-name" href="#/companies/${esc(c.org)}">${esc(c.name||"Not resolved")}</a><div class="small muted"><span class="num">${esc(c.org)}</span> · ${esc(c.form||"")}${c.brand?` · “${esc(c.brand)}”`:""}</div></td>
+    <td><span class="small">${esc(c.municipality||"")}<br><span class="muted">${esc(c.industry||"")}</span></span></td>
+    <td class="r num" data-l="Employees">${c.employees==null?'<span class="muted">n/a</span>':n0(c.employees)}</td>
+    <td class="r num" data-l="Revenue">${c.revenue==null?'<span class="muted">n/a</span>':esc(money(c.revenue,c.currency))}${c.year?` <span class="muted small">’${esc(String(c.year).slice(2))}</span>`:""}</td>
+    <td class="r num" data-l="Result" style="${c.result<0?"color:var(--bad)":""}">${c.result==null?'<span class="muted">n/a</span>':esc(money(c.result,c.currency))}</td>
+    <td class="r" data-l="Coverage"><span class="dots" title="${(c.has||[]).length} of ${SECTIONS.length} sections have facts">${SECTIONS.map(([k])=>`<i class="dot ${(c.has||[]).includes(k)?"on":""}"></i>`).join("")}</span></td>
+    <td>${c.state!=="available"?tag(c.state):""} ${c.status&&c.status!=="active"?tag("high",c.status):""} ${c.jobs?tag("info",c.jobs+(c.jobs>1?" roles":" role")):""} ${c.rating?tag("available","rated "+c.rating):""} ${c.changes?tag("medium",c.changes+" changed"):""}</td></tr>`).join("")||`<tr><td colspan="8" class="empty">No company matches these filters.</td></tr>`}
+  </tbody></table></div>
+  <div class="pager"><span class="muted small">Page ${S.page+1} of ${pages}</span><button class="chip" data-act="page" data-v="-1" ${S.page<=0?"disabled":""}>← Previous</button><button class="chip" data-act="page" data-v="1" ${S.page>=pages-1?"disabled":""}>Next →</button></div>`;
+}
+
+/* ---------- profile ---------- */
+function val(c){ const v=c.value,u=c.unit; if(v==null) return "—";
+  if(typeof v==="number") return (u&&/^[A-Z]{3}$/.test(u)) ? `<span class="num">${esc(money(v,u))}</span> <span class="muted small num">${n0(v)}</span>` : `<span class="num">${n0(v)}</span>${u?" "+esc(u):""}`;
+  if(typeof v==="string") return isUrl(v)?link(v):esc(v);
+  if(Array.isArray(v)) return v.map(x=>typeof x==="object"?esc(Object.values(x).filter(Boolean).join(" · ")):esc(x)).join("<br>");
+  if(v.rating!=null&&v.review_count!=null) return `<span class="meter" role="img" aria-label="${esc(v.rating)} of ${esc(v.scale)}"><i style="width:${(v.rating/v.scale*100).toFixed(0)}%"></i></span> <b class="num">${esc(v.rating)}</b> / ${esc(v.scale)} from <span class="num">${n0(v.review_count)}</span> review${v.review_count===1?"":"s"} · ${link(v.listing_url,v.shown_by)}`;
+  if(v.url&&v.title) return `${link(v.url,v.title)}<div class="note">${[v.published,v.location,v.expires&&"apply by "+v.expires,v.source].filter(Boolean).map(esc).join(" · ")}</div>`;
+  if(v.platform&&v.url) return link(v.url);
+  if(v.name&&v.role) return `<b>${esc(v.name)}</b><div class="note">${esc(v.role_english||v.role)}${v.elected_by?" · "+esc(v.elected_by):""}</div>`;
+  if(v.name&&v.organisation_number) return `<a href="#/companies/${esc(v.organisation_number)}">${esc(v.name)}</a><div class="note"><span class="num">${esc(v.organisation_number)}</span>${["address","ownership","relation","industry"].filter(k=>v[k]).map(k=>" · "+esc(v[k])).join("")}${v.employees!=null?` · ${n0(v.employees)} employees`:""}</div>`;
+  if(v.formatted) return esc(v.formatted);
+  if(v.code&&v.description) return `${esc(v.description)} <span class="muted small num">${esc(v.code)}</span>`;
+  if(v.amount!=null) return `<span class="num">${esc(money(v.amount,v.currency))}</span>${v.shares?` <span class="muted small">${n0(v.shares)} shares</span>`:""}`;
+  if(v.url) return link(v.url)+`<div class="note">${Object.entries(v).filter(([k])=>!["url","id","place_id"].includes(k)).map(([k,x])=>`${esc(k.replace(/_/g," "))}: ${esc(Array.isArray(x)?x.join(", "):x)}`).join(" · ")}</div>`;
+  return Object.entries(v).map(([k,x])=>`<span class="muted small">${esc(k.replace(/_/g," "))}</span> ${esc(typeof x==="object"?JSON.stringify(x):x)}`).join(" · "); }
+function fact(c){ const when=c.period?`FY ${esc(c.period.fiscal_year)} · ${esc(c.period.scope)}`:(c.effective_date?`as of ${day(c.effective_date)}`:"");
+  const body=c.availability==="available"?val(c):`${tag(c.availability)} <span class="muted">${esc(c.explanation||"")}</span>`;
+  return `<div class="fact"><div class="k">${esc(c.label)}${when?`<div class="note">${when}</div>`:""}</div><div class="v">${body}${c.carried_forward?" "+tag("medium","carried forward"):""}</div>
+   <div>${(c.evidence_ids||[]).length?`<button class="verify" data-act="evidence" data-claim="${esc(c.id)}">Verify${c.confidence!=null&&c.availability==="available"?` · ${Math.round(c.confidence*100)}%`:""}</button>`:""}</div></div>`; }
+function sec(d,id,title,families,extra){ const cl=d.claims.filter(c=>families.includes(c.family)); const st=families.map(f=>(d.sections||{})[f]).filter(Boolean);
+  const avail=cl.filter(c=>c.availability==="available"), miss=cl.filter(c=>c.availability!=="available");
+  const state=st.some(s=>s.availability==="available")?"available":(st[0]||{}).availability||"not_available";
+  return `<section class="sec" id="${id}"><div class="sec-head"><h2>${esc(title)}</h2>${tag(state)}<span class="muted small">${avail.length} fact${avail.length===1?"":"s"}</span></div>${extra||""}
+   <div class="facts">${avail.map(fact).join("")}${miss.map(fact).join("")}${!cl.length?`<div class="fact"><div class="k">Nothing found</div><div class="v muted">${esc((st[0]||{}).explanation||"No source yielded this information.")}</div><div></div></div>`:""}</div></section>`; }
+function series(d,field){ const cl=d.claims.filter(c=>c.field===field&&c.availability==="available"&&c.period&&typeof c.value==="number"); const by={};
+  cl.forEach(c=>{const y=c.period.fiscal_year; if(!by[y]||c.period.accounts_type==="SELSKAP") by[y]=c;}); return Object.keys(by).sort().map(y=>by[y]); }
+function finChart(d){ const metrics=[["revenue","Revenue"],["operating_result","Operating result"],["annual_result","Annual result"],["equity","Equity"],["total_assets","Total assets"],["total_debt","Liabilities"]].filter(([f])=>series(d,f).length);
+  if(!metrics.length) return ""; if(!metrics.find(m=>m[0]===S.metric)) S.metric=metrics[0][0];
+  const s=series(d,S.metric), max=Math.max(1,...s.map(c=>Math.abs(c.value))), neg=s.some(c=>c.value<0), zero=neg?50:0, span=neg?50:100;
+  return `<div class="seg" aria-label="Figure to chart">${metrics.map(([f,l])=>`<button class="${f===S.metric?"on":""}" data-act="metric" data-v="${f}">${l}</button>`).join("")}</div>
+   <div class="fin-chart">${s.map(c=>{const w=Math.abs(c.value)/max*span; return `<div class="fin-row"><span class="num">FY ${esc(c.period.fiscal_year)}</span>
+     <button class="fin-track" data-act="evidence" data-claim="${esc(c.id)}" title="Verify this figure" aria-label="FY ${esc(c.period.fiscal_year)}: ${esc(money(c.value,c.unit))}. Verify."><span class="fin-bar ${c.value<0?"neg":""}" style="left:${c.value<0?zero-w:zero}%;width:${w}%"></span>${neg?`<span class="fin-zero" style="left:50%"></span>`:""}</button>
+     <span class="num" style="text-align:right;${c.value<0?"color:var(--bad)":""}">${esc(money(c.value,c.unit))}</span></div>`;}).join("")}</div>
+   <p class="note">Figures exactly as filed with Regnskapsregisteret${s[0]&&s[0].period.accounts_type==="KONSERN"?" (consolidated group accounts)":""}. Click a bar to see its source. A line item that was not filed is left out, never shown as zero.</p>`; }
+function tile(d,label,field){ const s=series(d,field); if(!s.length) return ""; const last=s[s.length-1], max=Math.max(1,...s.map(c=>Math.abs(c.value)));
+  return `<div class="tile"><span class="caps">${label} · FY ${esc(last.period.fiscal_year)}</span><b class="num" style="${last.value<0?"color:var(--bad)":""}">${esc(money(last.value,last.unit))}</b>
+   ${s.length>1?`<div class="spark" title="${esc(s.map(c=>c.period.fiscal_year+": "+money(c.value,c.unit)).join("  ·  "))}">${s.map(c=>`<i class="${c.value<0?"neg":""}" style="height:${Math.max(8,Math.abs(c.value)/max*100)}%"></i>`).join("")}</div>`:""}</div>`; }
+function timeline(d){ const items=[];
+  d.claims.forEach(c=>{ if(c.availability!=="available") return; const v=c.value||{};
+    if(c.field==="company_news_item") items.push([v.published,"News",link(v.url,v.title),c.id]);
+    else if(c.field==="job_posting"&&v.published) items.push([v.published,"Role posted",link(v.url,v.title),c.id]);
+    else if(c.field==="accounts_filing"&&c.period&&c.period.accounts_type==="SELSKAP") items.push([c.period.to,"Fiscal year end",`Annual accounts for ${esc(c.period.fiscal_year)} filed`,c.id]);
+    else if(c.field==="registry_updates") (v.recent_dates||[]).forEach(t=>items.push([t,"Register","Entry updated in Enhetsregisteret",c.id]));
+    else if(c.field==="share_capital"&&c.effective_date) items.push([c.effective_date,"Capital",`Registered capital set to ${esc(money(v.amount,v.currency))}`,c.id]); });
+  items.sort((a,b)=>String(b[0]).localeCompare(String(a[0]))); if(!items.length) return "";
+  return `<ol class="timeline">${items.slice(0,14).map(([t,k,h,id])=>`<li><span class="num small">${day(t)}</span> <span class="caps">${esc(k)}</span><div>${h} <button class="verify" data-act="evidence" data-claim="${esc(id)}">Verify</button></div></li>`).join("")}</ol>`; }
+async function viewCompany(org){ const app=$("#app"); if(!cache[org]) app.innerHTML=`<div class="empty">Opening ${esc(org)}…</div>`; let d;
+  try{ d=await loadCompany(org); }catch(e){ app.innerHTML=`<div class="panel"><h1>${esc(org)}</h1><p>No stored profile for this organisation number.</p><p class="muted">When the live server is running you can <a href="/research?organisation_number=${esc(org)}">research it now</a>.</p><p><a href="#/">← Back to the register</a></p></div>`; return; }
+  S.company=d; const id=d.identity||{}, s=d.summary||{}; let n=0; const cites={};
+  const sentences=(s.sentences||[]).map(x=>`<p>${esc(x.text)}${x.derived?" "+tag("info","derived"):""}${(x.claim_ids||[]).slice(0,3).map(c=>{ if(!(c in cites)) cites[c]=++n; return `<button class="cite" data-act="evidence" data-claim="${esc(c)}" title="Show the source" aria-label="Source ${cites[c]}">${cites[c]}</button>`; }).join("")}</p>`).join("");
+  const count=f=>d.claims.filter(c=>f.includes(c.family)&&c.availability==="available").length;
+  const toc=[["summary","Summary",(s.sentences||[]).length],["identity","Identity",count(["legal_identity"])],["financials","Financials",count(["annual_accounts"])],["people","Leadership",count(["leadership"])],["places","Workplaces & group",count(["workplaces","group_structure"])],["online","Website & profiles",count(["official_website","company_profiles","contact"])],["market","Hiring & reviews",count(["hiring","reviews"])],["activity","Activity",count(["public_activity"])],["changes","Changes",(d.changes||[]).length],["unknowns","Unknowns",(s.unknowns||[]).length]];
+  const inCmp=S.compare.has(org), emp=d.claims.find(c=>c.key==="identity.employees"&&c.availability==="available"), rate=d.claims.find(c=>c.field==="review_summary"&&c.availability==="available");
+  const stateTag=d.status==="available" ? tag(id.status==="active"?"available":"high", id.status||"resolved") : tag(d.status);
+  app.innerHTML=`
+  <div class="crumb"><a href="#/">← Register</a></div>
+  <h1>${esc(id.legal_name||org)}</h1>
+  <div class="head-meta"><span>Org. no. <span class="num">${esc(org)}</span></span>${id.public_brand?`<span>Trades as “${esc(id.public_brand)}”</span>`:""}${id.legal_form?`<span>${esc(id.legal_form)}</span>`:""}${id.municipality?`<span>${esc(id.municipality)}</span>`:""}${id.official_website?`<span>${link(id.official_website)}</span>`:""}<span>${stateTag}</span></div>
+  <p class="lede">${esc(s.headline||"This organisation number could not be resolved to a company in the official register.")}</p>
+  <div class="btn-row" style="margin-top:16px"><button class="btn ${inCmp?"solid":""}" data-act="cmp-toggle" data-org="${esc(org)}">${inCmp?"✓ In comparison":"Add to comparison"}</button>
+    <a class="btn" href="https://data.brreg.no/enhetsregisteret/oppslag/enheter/${esc(org)}" target="_blank" rel="noopener noreferrer">Open in the official register ↗</a><button class="btn" data-act="raw">Download JSON</button></div>
+  <div class="layout"><nav class="toc" aria-label="Sections">${toc.map(([k,l,c],i)=>`<a href="#${k}" data-act="jump" data-toc="${k}" class="${i?"":"on"}">${l}<span class="n">${c}</span></a>`).join("")}</nav><div>
+   <section class="sec" id="summary"><div class="sec-head"><h2>Summary</h2><span class="muted small">every sentence cites its source: click a number</span></div>
+     <div class="tiles">${tile(d,"Revenue","revenue")}${tile(d,"Operating result","operating_result")}${tile(d,"Annual result","annual_result")}${tile(d,"Equity","equity")}
+       ${emp?`<div class="tile"><span class="caps">Employees · register</span><b class="num">${n0(emp.value)}</b></div>`:""}${rate?`<div class="tile"><span class="caps">Customer rating</span><b class="num">${esc(rate.value.rating)} / ${esc(rate.value.scale)}</b><span class="note">${n0(rate.value.review_count)} reviews</span></div>`:""}</div>
+     <div class="prose" style="margin-top:14px">${sentences||'<p class="muted">No supported statement could be made about this company.</p>'}</div>
+     ${(s.signals||[]).length?`<div style="margin-top:8px">${s.signals.map(g=>tag(g.severity,g.text)).join(" ")}</div>`:""}
+     <p class="note">${esc(s.method||"")}</p></section>
+   ${sec(d,"identity","Legal identity and brand",["legal_identity"])}
+   ${sec(d,"financials","Financials",["annual_accounts"],finChart(d))}
+   ${sec(d,"people","Leadership",["leadership"])}
+   ${sec(d,"places","Workplaces and group",["workplaces","group_structure"])}
+   ${sec(d,"online","Website and profiles",["official_website","company_profiles","contact"])}
+   ${sec(d,"market","Hiring and reviews",["hiring","reviews"])}
+   ${sec(d,"activity","Activity",["public_activity"],timeline(d))}
+   <section class="sec" id="changes"><div class="sec-head"><h2>Changes</h2><span class="muted small">${esc((s.what_changed||{}).note||"")}</span></div>
+     <div class="facts">${(d.changes||[]).map(c=>`<div class="fact"><div class="k">${tag(c.materiality)} ${esc(c.change_type.replace(/_/g," "))}<div class="note">detected ${day(c.detected_at)}</div></div><div class="v">${esc(c.summary)}<div class="note">before <span class="num">${esc(JSON.stringify(c.old_value)).slice(0,160)}</span><br>after <span class="num">${esc(JSON.stringify(c.new_value)).slice(0,160)}</span></div></div><div>${link(c.source_url,"source ↗")}<div class="note">${(c.old_evidence||[]).length} earlier record kept</div></div></div>`).join("")||`<div class="fact"><div class="k">No change</div><div class="v muted">Nothing differs from the previous snapshot.</div><div></div></div>`}
+     ${(d.change_history||[]).length?`<h3 class="caps" style="margin-top:14px">Earlier runs</h3>${d.change_history.slice().reverse().slice(0,25).map(c=>`<div class="small"><span class="num">${day(c.detected_at)}</span> ${tag(c.materiality)} ${esc(c.summary)}</div>`).join("")}`:""}</div></section>
+   <section class="sec" id="unknowns"><div class="sec-head"><h2>What this profile does not know</h2></div>
+     <div class="facts">${(s.unknowns||[]).map(u=>`<div class="fact"><div class="k">${esc(u.topic)}</div><div class="v">${tag(u.availability)} <span class="muted">${esc(u.explanation||"")}</span></div><div></div></div>`).join("")}</div>
+     ${(d.errors||[]).length?`<h3 class="caps" style="margin-top:14px">Recorded during the run</h3>${d.errors.map(e=>`<div class="small"><span class="num">${esc(e.module)}:${esc(e.code)}</span> ${esc(e.message)}</div>`).join("")}`:""}
+     <p class="note">Run <span class="num">${esc(d.run_id)}</span> · generated ${esc(d.completed_at)} · ${esc(d.operations.requests)} requests · external API cost $${esc(d.operations.third_party_cost_usd)}</p></section>
+  </div></div>`;
+  spy(); }
+let spyObs; function spy(){ if(spyObs) spyObs.disconnect(); const links=$$("[data-toc]"); if(!links.length||!("IntersectionObserver" in window)) return;
+  spyObs=new IntersectionObserver(es=>{ es.forEach(e=>{ if(e.isIntersecting) links.forEach(a=>a.classList.toggle("on",a.dataset.toc===e.target.id)); }); },{rootMargin:"-80px 0px -70% 0px"});
+  $$("section.sec").forEach(x=>spyObs.observe(x)); }
+
+/* ---------- evidence drawer ---------- */
+function openEvidence(claimId){ const d=S.company; if(!d) return; const c=d.claims.find(x=>x.id===claimId); if(!c) return; const map=Object.fromEntries(d.evidence.map(e=>[e.id,e]));
+  $("#drawer-title").textContent=c.label;
+  $("#drawer-body").innerHTML=`<div style="padding-bottom:10px;border-bottom:1px solid var(--rule2)">${c.availability==="available"?val(c):tag(c.availability)}${c.explanation?`<div class="note">${esc(c.explanation)}</div>`:""}</div>
+   <dl class="kv" style="margin:12px 0 16px">${c.period?`<dt>Reporting period</dt><dd class="num">${esc(c.period.from)} to ${esc(c.period.to)} · ${esc(c.period.scope)}</dd>`:""}${c.effective_date?`<dt>Effective</dt><dd class="num">${day(c.effective_date)}</dd>`:""}${c.confidence!=null?`<dt>Confidence</dt><dd class="num">${Math.round(c.confidence*100)}%</dd>`:""}<dt>First seen</dt><dd class="num">${esc(c.first_observed_at||"")}</dd><dt>Last seen</dt><dd class="num">${esc(c.last_observed_at||"")}</dd><dt>Claim key</dt><dd class="num">${esc(c.key)}</dd></dl>
+   ${(c.evidence_ids||[]).map(i=>map[i]).filter(Boolean).map(e=>`<div class="ev"><div class="caps">${esc(String(e.source_class||"").replace(/_/g," "))}${e.from_previous_run?" · from an earlier run":""}</div><b>${esc(e.source_name||"")}</b>
+     <div class="span">${esc(e.claim_span)}</div>
+     <dl class="kv"><dt>Source</dt><dd>${link(e.source_url,e.source_url)}</dd><dt>Retrieved</dt><dd class="num">${esc(e.retrieved_at)}</dd>${e.effective_at?`<dt>Effective</dt><dd class="num">${esc(e.effective_at)}</dd>`:""}<dt>Method</dt><dd class="num">${esc(e.extraction_method)}</dd><dt>SHA-256</dt><dd class="num">${esc(e.content_sha256||"n/a")}</dd>${e.licence?`<dt>Access basis</dt><dd>${esc(e.licence)}</dd>`:""}</dl>
+     <div style="margin-top:10px">${isUrl(e.source_url)?`<a class="btn" href="${esc(e.source_url)}" target="_blank" rel="noopener noreferrer">Open the source ↗</a>`:""}</div></div>`).join("")||'<p class="muted">No evidence record: this claim has no value.</p>'}`;
+  $("#drawer").classList.add("open"); $("#scrim").classList.add("open"); $("#drawer").setAttribute("aria-hidden","false"); $("#drawer [data-act=close-drawer]").focus(); }
+function closeDrawer(){ $("#drawer").classList.remove("open"); $("#scrim").classList.remove("open"); $("#drawer").setAttribute("aria-hidden","true"); }
+
+/* ---------- compare ---------- */
+async function viewCompare(){ const orgs=[...S.compare], app=$("#app");
+  if(!orgs.length){ app.innerHTML=`<h1>Compare companies</h1><p class="lede">Tick up to four companies in the <a href="#/">register</a>, or use “Add to comparison” on a profile. Every cell keeps its source.</p>`; return; }
+  app.innerHTML='<div class="empty">Loading…</div>'; const ds=(await Promise.all(orgs.map(o=>loadCompany(o).catch(()=>null)))).filter(Boolean);
+  const pick=(d,k)=>d.claims.find(c=>c.key===k), last=(d,f)=>{const s=series(d,f);return s[s.length-1]}, role=(d,r)=>d.claims.find(c=>c.field==="role_holder"&&c.availability==="available"&&c.value.role_code===r);
+  const cnt=(d,f)=>d.claims.filter(c=>c.field===f&&c.availability==="available").length;
+  const verify=(d,c)=>`<button class="verify" data-act="evidence" data-claim="${esc(c.id)}" data-org="${esc(d.organisation_number)}">Verify</button>`;
+  const text=(d,c)=>{ if(!c) return '<span class="muted">not available</span>'; if(c.availability!=="available") return tag(c.availability); return `${val(c)} ${verify(d,c)}`; };
+  const numeric=(label,get)=>{ const cs=ds.map(get), vals=cs.map(c=>c&&c.availability==="available"&&typeof c.value==="number"?c.value:null), have=vals.filter(v=>v!=null), max=Math.max(1,...have.map(Math.abs)), best=Math.max(...have);
+    return `<tr><th scope="row">${label}</th>${ds.map((d,i)=>`<td>${vals[i]==null?'<span class="muted">not available</span>':`<span class="num ${vals[i]===best&&have.length>1?"best":""}">${cs[i].unit&&/^[A-Z]{3}$/.test(cs[i].unit)?esc(money(vals[i],cs[i].unit)):n0(vals[i])}</span>${cs[i].period?` <span class="muted small">FY ${esc(cs[i].period.fiscal_year)}</span>`:""} ${verify(d,cs[i])}<div class="cmp-bar ${vals[i]<0?"neg":""}" style="width:${Math.abs(vals[i])/max*100}%"></div>`}</td>`).join("")}</tr>`; };
+  const plain=(label,get)=>`<tr><th scope="row">${label}</th>${ds.map(d=>`<td>${get(d)}</td>`).join("")}</tr>`;
+  app.innerHTML=`<h1>Compare</h1><p class="lede">Bars are scaled to the largest value in each row. “Not available” means the source was checked and had nothing; it is never treated as zero.</p>
+   <div class="table-wrap" style="margin-top:18px"><table class="cmp"><thead><tr><th></th>${ds.map(d=>`<th><a href="#/companies/${esc(d.organisation_number)}">${esc((d.identity||{}).legal_name||d.organisation_number)}</a> <button class="chip" data-act="cmp-remove" data-org="${esc(d.organisation_number)}" aria-label="Remove from comparison">✕</button></th>`).join("")}</tr></thead><tbody>
+   ${plain("Status",d=>text(d,pick(d,"identity.status")))}${plain("Founded",d=>text(d,pick(d,"identity.founded_date")))}${plain("Industry",d=>text(d,pick(d,"identity.industry")))}
+   ${numeric("Employees (register)",d=>pick(d,"identity.employees"))}${numeric("Revenue",d=>last(d,"revenue"))}${numeric("Operating result",d=>last(d,"operating_result"))}${numeric("Annual result",d=>last(d,"annual_result"))}${numeric("Equity",d=>last(d,"equity"))}${numeric("Total assets",d=>last(d,"total_assets"))}${numeric("Liabilities",d=>last(d,"total_debt"))}${numeric("Registered workplaces",d=>pick(d,"workplaces.count"))}
+   ${plain("Managing director",d=>text(d,role(d,"DAGL")))}${plain("Board chair",d=>text(d,role(d,"LEDE")))}${plain("Verified website",d=>text(d,pick(d,"website.official")))}
+   ${plain("Customer rating",d=>text(d,d.claims.find(c=>c.field==="review_summary"&&c.availability==="available")||pick(d,"reviews.rating")))}
+   ${plain("Social profiles",d=>`<span class="num">${cnt(d,"social_profile")}</span>`)}${plain("Verified open roles",d=>`<span class="num">${cnt(d,"job_posting")}</span>`)}${plain("Changes this run",d=>`<span class="num">${(d.changes||[]).length}</span>`)}
+   </tbody></table></div>`; }
+
+/* ---------- changes and method ---------- */
+function viewChanges(){ const ch=INDEX.changes||[];
+  $("#app").innerHTML=`<h1>What changed</h1><p class="lede">Differences between the latest run and each company’s previous snapshot. The earlier evidence is kept with every change.</p>
+  <div class="facts" style="margin-top:18px">${ch.map(c=>`<div class="fact"><div class="k">${tag(c.materiality)} ${esc(c.change_type.replace(/_/g," "))}<div class="note num">${day(c.detected_at)}</div></div><div class="v"><a href="#/companies/${esc(c.org)}">${esc(c.name||c.org)}</a><div>${esc(c.summary)}</div></div><div>${link(c.source_url,"source ↗")}</div></div>`).join("")||`<div class="panel muted">No change in the latest run. On a first run there is no earlier snapshot to compare against; run the agent again to see what moved.</div>`}</div>`; }
+function viewMethod(){ const m=INDEX.meta||{};
+  $("#app").innerHTML=`<h1>How to read and check a profile</h1>
+  <div class="prose">
+   <p><b>Identity comes first.</b> Every profile starts from the organisation number in Brønnøysund’s official register. Official facts are fetched by that number, so they cannot belong to another company.</p>
+   <p><b>A website is a candidate until proven.</b> It is published only when the site prints the exact organisation number, or when the company itself reported the site to the register and the full legal name appears on it. A site that names a different legal entity is labelled a group or brand site, and nothing on it is attributed to the company.</p>
+   <p><b>Every fact can be checked.</b> Press <span class="verify">Verify</span> next to any fact to see the source address, when it was fetched, the exact supporting text and a SHA-256 hash of the fetched bytes.</p>
+   <p><b>Six honest states.</b> ${["available","not_available","blocked","not_applicable","ambiguous","failed"].map(s=>tag(s)).join(" ")} A missing value is never turned into zero.</p>
+   <p><b>Refresh is a diff.</b> Each run is compared with the previous snapshot. Changes are typed and keep the earlier evidence. A source that fails keeps the last supported value, marked as carried forward.</p>
+   <p><b>No model writes the facts or the summary.</b> Extraction and wording are deterministic, so nothing can be invented and a rerun gives the same answer.</p>
+  </div><hr class="rule"><h2>Latest run</h2>
+  <div class="kpis">${Object.entries(m.stats||{}).map(([k,v])=>`<div class="kpi"><span class="caps">${esc(k)}</span><b class="num">${esc(typeof v==="number"?n0(v):v)}</b></div>`).join("")}</div>`; }
+
+/* ---------- shell ---------- */
+function tray(){ const n=S.compare.size; $("#tray").innerHTML = n && !location.hash.startsWith("#/compare") ? `<div class="tray"><span>${n} selected</span><a href="#/compare">Compare →</a><button data-act="cmp-clear">Clear</button></div>` : ""; }
+function setCompare(org,on){ if(on){ if(S.compare.size<4) S.compare.add(org); } else S.compare.delete(org); store.set("sp-compare",[...S.compare]); tray(); }
+function route(keep){ const h=location.hash.replace(/^#/,"")||"/", m=h.match(/^\/companies\/([^/?#]+)/); let nav="list";
+  if(m) viewCompany(decodeURIComponent(m[1])); else if(h.startsWith("/compare")){nav="compare";viewCompare();} else if(h.startsWith("/changes")){nav="changes";viewChanges();} else if(h.startsWith("/method")){nav="method";viewMethod();} else viewRegister();
+  $$(".nav a").forEach(a=>a.classList.toggle("on",a.dataset.nav===nav&&!m)); tray(); if(!keep) window.scrollTo(0,0); }
+document.addEventListener("click",async e=>{ const el=e.target.closest("[data-act]"); if(!el){ if(e.target.id==="scrim") closeDrawer(); return; } const a=el.dataset.act;
+  if(a==="filter"){ const k=el.dataset.k, v=el.dataset.v; S.filters[k]=S.filters[k]===v?null:v; S.page=0; viewRegister(); }
+  else if(a==="clear"){ S.filters={}; S.q=""; $("#q").value=""; S.page=0; viewRegister(); }
+  else if(a==="sort"){ const k=el.dataset.k; S.sort = S.sort.key===k ? {key:k,dir:-S.sort.dir} : {key:k,dir:COLS.find(c=>c[0]===k)[3]?-1:1}; viewRegister(); }
+  else if(a==="page"){ S.page+=Number(el.dataset.v); viewRegister(); $(".table-wrap").scrollIntoView({block:"start"}); }
+  else if(a==="cmp"){ setCompare(el.dataset.org,el.checked); el.checked=S.compare.has(el.dataset.org); }
+  else if(a==="open"){ if(!e.target.closest("a,input,button")) location.hash="#/companies/"+el.dataset.org; }
+  else if(a==="cmp-toggle"){ setCompare(el.dataset.org,!S.compare.has(el.dataset.org)); const y=window.scrollY; await viewCompany(el.dataset.org); window.scrollTo(0,y); }
+  else if(a==="cmp-remove"){ setCompare(el.dataset.org,false); viewCompare(); }
+  else if(a==="cmp-clear"){ S.compare.clear(); store.set("sp-compare",[]); route(true); }
+  else if(a==="metric"){ S.metric=el.dataset.v; const y=window.scrollY; await viewCompany(S.company.organisation_number); window.scrollTo(0,y); }
+  else if(a==="evidence"){ if(el.dataset.org) S.company=cache[el.dataset.org]; openEvidence(el.dataset.claim); }
+  else if(a==="jump"){ e.preventDefault(); const t=document.getElementById(el.dataset.toc); if(t) t.scrollIntoView({block:"start"}); }
+  else if(a==="close-drawer") closeDrawer();
+  else if(a==="raw"){ const d=S.company, x=document.createElement("a"); x.href=URL.createObjectURL(new Blob([JSON.stringify(d,null,1)],{type:"application/json"})); x.download=d.organisation_number+".json"; x.click(); } });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeDrawer(); if(e.key==="/"&&!/input|textarea/i.test(document.activeElement.tagName)){ e.preventDefault(); $("#q").focus(); } });
+$("#q").addEventListener("input",e=>{ S.q=e.target.value.trim(); S.page=0; if(location.hash&&location.hash!=="#/") location.hash="#/"; else viewRegister(); });
+$("#theme").addEventListener("click",()=>applyTheme(document.documentElement.dataset.theme==="dark"?"light":"dark"));
+window.addEventListener("hashchange",()=>{ closeDrawer(); if(location.hash.startsWith("#/")||location.hash==="") route(); });
+const pm=location.pathname.match(/\/companies\/(\d{9})\/?$/); if(pm&&!location.hash) location.hash="#/companies/"+pm[1];
+route();
+</script>
+</body>
+</html>
