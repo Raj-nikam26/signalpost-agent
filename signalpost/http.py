@@ -96,6 +96,9 @@ class Budget:
         self.latencies_ms: list[int] = []
         self.by_class: dict[str, int] = {}
         self.dns_lookups = 0
+        self.max_cost_usd = float(os.environ.get("SIGNALPOST_API_BUDGET_USD", "8"))
+        self.cost_usd = 0.0
+        self.cost_by_api: dict[str, float] = {}
         self._lock = threading.Lock()
 
     def reserve(self, amount: int) -> None:
@@ -111,6 +114,15 @@ class Budget:
                 return False
             self.used += 1
             self.by_class[source_class] = self.by_class.get(source_class, 0) + 1
+            return True
+
+    def spend(self, api: str, usd: float) -> bool:
+        """Reserve `usd` of the declared external-API budget. False means the paid call must not be made."""
+        with self._lock:
+            if self.cost_usd + usd > self.max_cost_usd + 1e-9:
+                return False
+            self.cost_usd = round(self.cost_usd + usd, 6)
+            self.cost_by_api[api] = round(self.cost_by_api.get(api, 0.0) + usd, 6)
             return True
 
     def record(self, response: Response) -> None:
@@ -185,7 +197,7 @@ class Fetcher:
         self._context = ssl.create_default_context()
         self._opener = urllib.request.build_opener(_NoRedirect, urllib.request.HTTPSHandler(context=self._context))
         self._host_locks: dict[str, threading.Semaphore] = {}
-        self._host_limits = {"data.brreg.no": 12, "arbeidsplassen.nav.no": 4, "query.wikidata.org": 1, "www.fagfolkguiden.no": 3}
+        self._host_limits = {"api.search.brave.com": 1, "places.googleapis.com": 4, "data.brreg.no": 12, "arbeidsplassen.nav.no": 4, "query.wikidata.org": 1, "www.fagfolkguiden.no": 3}
         self._robots: dict[str, urllib.robotparser.RobotFileParser | None] = {}
         self._lock = threading.Lock()
         self._local = threading.local()
@@ -226,13 +238,15 @@ class Fetcher:
         return parser.can_fetch(ROBOTS_AGENT, url)
 
     # -- transport ----------------------------------------------------------------------------
-    def _send(self, url: str, accept: str, timeout: float, max_bytes: int) -> Response:
+    def _send(self, url: str, accept: str, timeout: float, max_bytes: int, headers: dict[str, str] | None = None,
+              data: bytes | None = None) -> Response:
         started = time.monotonic()
-        request = urllib.request.Request(url, headers={
+        request = urllib.request.Request(url, data=data, headers={
             "User-Agent": USER_AGENT,
             "Accept": accept,
             "Accept-Encoding": "gzip, deflate",
             "Accept-Language": "nb-NO,nb;q=0.9,no;q=0.8,en;q=0.6",
+            **(headers or {}),
         })
         response = Response(url=url, final_url=url, retrieved_at=utc_now())
         try:
@@ -277,6 +291,8 @@ class Fetcher:
         attempts: int = 1,
         timeout: float | None = None,
         max_bytes: int | None = None,
+        headers: dict[str, str] | None = None,
+        data: bytes | None = None,
     ) -> Response:
         """Fetch one URL, following validated redirects. Never raises; failures are explicit states."""
         timeout = timeout or self.timeout
@@ -306,7 +322,9 @@ class Fetcher:
                     break
                 self._local.count = getattr(self._local, "count", 0) + 1
                 with self._semaphore(host_of(current)):
-                    hop_response = self._send(current, accept, timeout, max_bytes)
+                    # Secret headers and bodies go to the first hop only; a redirect never carries them to another host.
+                    first = current == url
+                    hop_response = self._send(current, accept, timeout, max_bytes, headers if first else None, data if first else None)
                 hop_response.attempts = attempt + 1
                 self.budget.record(hop_response)
                 retryable = hop_response.status in {0, 429, 500, 502, 503, 504}

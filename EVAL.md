@@ -8,7 +8,7 @@ The hidden daily batch is the exam. These are the local checks that gate every c
 python -m unittest discover -s tests
 ```
 
-41 tests, no network, a few seconds. Each one pins a failure that would cost the run:
+46 tests, no network, a few seconds. Each one pins a failure that would cost the run:
 
 | Risk | Tests |
 |---|---|
@@ -18,6 +18,7 @@ python -m unittest discover -s tests
 | False or lost changes | Same snapshot gives zero changes and no duplicate keys; changes are typed and keep earlier evidence; a new filing keeps older years; a failed source keeps the last value and reports no change; a total failure never erases the previous profile |
 | Unsafe requests | Loopback, private, link-local, metadata, non-HTTP, credentialed and odd-port URLs are refused and never fetched |
 | External sources | A rating is published only when the directory page states this organisation number; domain guesses are candidates only; the observation block mirrors published claims only |
+| Keyed connectors | Off without a key; search results are candidates only and directories are dropped; the key travels in a header and never appears in output; a place is published only on an identity match; paid calls stop at the declared budget |
 | Personal data | Birth dates never appear; only generic mailboxes are published |
 | Input handling | JSON, JSONL, CSV, text and literal lists give the same batch; duplicates collapse |
 | Site safety | Company text cannot break out of the page's script element |

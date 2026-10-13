@@ -16,7 +16,16 @@
 | Fagfolkguiden.no | `fagfolkguiden.no/bedrift/{name}-{org}` | Aggregate customer rating and review count shown on the company's directory page | Public page; robots.txt allows `/bedrift/`; one aggregate figure, no review text. Builderr's reference kit marks this source "rights review required", and the observation block carries that flag | 1 per company |
 | NAV arbeidsplassen.no | Public search and advert pages | Open positions | Public government job board; robots.txt allows all paths; heavily rate-limited | 0 to 4 per company, throttled |
 
-No source needs an API key, an account or a paid plan.
+No source above needs an API key, an account or a paid plan.
+
+### Optional keyed sources (off by default)
+
+| Source | Endpoint | Used for | Access basis | Requests |
+|---|---|---|---|---|
+| Brave Search API | `api.search.brave.com/res/v1/web/search` | Candidate websites only, for companies whose site could not be verified from the register | Official API with the evaluator's key. Titles, snippets and ranks are not kept or published; only independently fetched pages become evidence | 1 per company without a verified site |
+| Google Places API (New) | `places.googleapis.com/v1/places:searchText` | Rating, review count, Maps link | Official API with the evaluator's key; Google Maps Platform terms | 1 per company |
+
+Directories, social networks, news sites and registers are removed from search results before any page is fetched. A search candidate gets no trust from the search: it needs the organisation number on the site, or the full legal name plus a registry corroborator, exactly like a guessed domain.
 
 ## Sources deliberately not used
 
@@ -66,4 +75,4 @@ Fetched HTML is parsed as data only. Nothing from a page is executed, and no ins
 
 ## Secrets
 
-The agent has none. Three optional environment variables exist: `SIGNALPOST_CONTACT` and `SIGNALPOST_USER_AGENT` (user-agent text), and `SIGNALPOST_MAX_REQUESTS` (request cap). Nothing is written outside the output, report, state and site paths given on the command line.
+The agent needs none. Two optional keys (`SIGNALPOST_SEARCH_API_KEY`, `SIGNALPOST_PLACES_API_KEY`) are read from the environment, sent only as request headers to their own API host, never forwarded on a redirect, and never written to any output. Three further optional environment variables exist: `SIGNALPOST_CONTACT` and `SIGNALPOST_USER_AGENT` (user-agent text), and `SIGNALPOST_MAX_REQUESTS` (request cap). Nothing is written outside the output, report, state and site paths given on the command line.

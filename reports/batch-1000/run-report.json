@@ -2,9 +2,9 @@
   "agent": "signalpost-agent/1.0.0",
   "schema_version": "signalpost-envelope/1.0",
   "run_id": "batch-1000-run1",
-  "started_at": "2026-10-13T03:30:53Z",
-  "completed_at": "2026-10-13T03:44:02Z",
-  "runtime_seconds": 801.9,
+  "started_at": "2026-10-13T04:54:24Z",
+  "completed_at": "2026-10-13T05:04:41Z",
+  "runtime_seconds": 628.2,
   "expected_count": 1000,
   "input": {
     "source": "data/batch-1000.jsonl",
@@ -181,26 +181,32 @@
     "previous_source": null
   },
   "operations": {
-    "requests": 7831,
+    "requests": 7824,
     "request_budget": 20000,
-    "requests_per_company_mean": 7.83,
+    "requests_per_company_mean": 7.82,
     "requests_by_source_class": {
-      "company_owned": 1734,
+      "company_owned": 1727,
       "official_registry": 5074,
       "open_knowledge_base": 17,
       "public_directory": 1003,
       "public_job_board": 3
     },
     "dns_lookups": 1903,
-    "bytes": 155471287,
-    "p50_ms": 898,
-    "p95_ms": 3343,
-    "company_runtime_p50_ms": 8635,
-    "company_runtime_p95_ms": 28095,
+    "bytes": 155761117,
+    "p50_ms": 887,
+    "p95_ms": 1446,
+    "company_runtime_p50_ms": 5726,
+    "company_runtime_p95_ms": 19720,
     "time_budget_minutes": 40.0,
     "within_time_budget": true,
     "within_request_budget": true,
     "third_party_cost_usd": 0.0,
+    "third_party_cost_by_api": {},
+    "external_api_budget_usd": 8.0,
+    "keyed_connectors_enabled": {
+      "search": false,
+      "places": false
+    },
     "models": [],
     "workers": 16
   },
@@ -210,14 +216,16 @@
     "guess_domains": true,
     "registry_updates": true,
     "account_history": false,
-    "reviews": true
+    "reviews": true,
+    "search": true,
+    "places": true
   },
   "registry": {
     "identity_anchor": "live Enhetsregisteret API, exact organisation-number lookup"
   },
   "errors": {
     "website:blocked": 18,
-    "website:unreachable": 71,
+    "website:unreachable": 72,
     "financials:source_error": 2
   },
   "interrupted": false,

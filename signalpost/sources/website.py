@@ -66,7 +66,7 @@ JOB_TITLE_HINT = re.compile(r"/(jobs?|stilling(er)?|position|vacanc|ledig)[^/]*/
 @dataclass
 class Candidate:
     url: str
-    origin: str  # registry | wikidata | registry_email_domain | name_guess
+    origin: str  # registry | wikidata | registry_email_domain | name_guess | search
     note: str = ""
 
 
@@ -675,9 +675,15 @@ def publish_site(dossier: Dossier, entity: dict[str, Any], crawl: Crawl, assessm
 
 
 def collect_website(dossier: Dossier, fetcher: Fetcher, entity: dict[str, Any], *, wikidata_site: str | None = None,
-                    related_orgs: set[str] | None = None, allow_guess: bool = True) -> dict[str, Any] | None:
+                    related_orgs: set[str] | None = None, allow_guess: bool = True,
+                    search_urls: list[str] | None = None) -> dict[str, Any] | None:
     family = "official_website"
-    candidates = candidates_for(entity, wikidata_site, fetcher, allow_guess=allow_guess)
+    if search_urls is not None:
+        # Second pass: candidates nominated by a search API. They get no trust from the search itself.
+        candidates = [Candidate(url=url, origin="search", note="nominated by a search API; published only with on-site proof")
+                      for url in search_urls]
+    else:
+        candidates = candidates_for(entity, wikidata_site, fetcher, allow_guess=allow_guess)
     registry_site = entity.get("hjemmeside")
     if registry_site and social_platform(normalise_site(registry_site) or ""):
         # The entity reported a social page as its website: that is a company-declared profile, backed by the registry record.

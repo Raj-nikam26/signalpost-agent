@@ -2,9 +2,9 @@
   "agent": "signalpost-agent/1.0.0",
   "schema_version": "signalpost-envelope/1.0",
   "run_id": "smoke-100-run2",
-  "started_at": "2026-10-13T03:26:45Z",
-  "completed_at": "2026-10-13T03:30:50Z",
-  "runtime_seconds": 246.5,
+  "started_at": "2026-10-13T04:50:14Z",
+  "completed_at": "2026-10-13T04:54:20Z",
+  "runtime_seconds": 248.5,
   "expected_count": 100,
   "input": {
     "source": "data/smoke-100.jsonl",
@@ -186,15 +186,21 @@
       "public_job_board": 3
     },
     "dns_lookups": 185,
-    "bytes": 11074016,
-    "p50_ms": 888,
-    "p95_ms": 2253,
-    "company_runtime_p50_ms": 32890,
-    "company_runtime_p95_ms": 43301,
+    "bytes": 11074764,
+    "p50_ms": 889,
+    "p95_ms": 1181,
+    "company_runtime_p50_ms": 32476,
+    "company_runtime_p95_ms": 43435,
     "time_budget_minutes": 40.0,
     "within_time_budget": true,
     "within_request_budget": true,
     "third_party_cost_usd": 0.0,
+    "third_party_cost_by_api": {},
+    "external_api_budget_usd": 8.0,
+    "keyed_connectors_enabled": {
+      "search": false,
+      "places": false
+    },
     "models": [],
     "workers": 16
   },
@@ -204,7 +210,9 @@
     "guess_domains": true,
     "registry_updates": true,
     "account_history": true,
-    "reviews": true
+    "reviews": true,
+    "search": true,
+    "places": true
   },
   "registry": {
     "identity_anchor": "live Enhetsregisteret API, exact organisation-number lookup"

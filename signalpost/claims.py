@@ -21,6 +21,7 @@ LICENCES = {
     COMPANY_OWNED: "Public company-owned page; robots.txt honoured; facts only, no bulk republication",
     PUBLIC_JOB_BOARD: "NAV arbeidsplassen.no public job listing; robots.txt permits access",
     OPEN_KNOWLEDGE: "CC0 1.0 (Wikidata)",
+    "licensed_places_api": "Google Maps Platform terms; official Places API with the evaluator's key; Google attribution required",
     PUBLIC_DIRECTORY: "Public directory page; robots.txt permits /bedrift/ pages; one aggregate figure recorded, no review text",
 }
 

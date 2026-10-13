@@ -6,7 +6,7 @@ Give it Norwegian organisation numbers. It returns one evidence-backed company p
 - **Every fact has a source.** Each claim carries the source URL, retrieval time, reporting period, the supporting text span and a SHA-256 of the fetched bytes.
 - **Nothing invented.** No model writes facts or summaries. A missing value is reported as `not_available`, never as zero.
 - **One result per input, always.** Unknown, invalid, blocked and failed inputs each get an explicit terminal envelope.
-- **Zero install, zero cost.** Python standard library only. No API keys. External API cost per run: $0.
+- **Zero install, zero cost.** Python standard library only. No API keys needed; external API cost per run is $0 unless the evaluator switches on an optional keyed connector.
 
 ## Run it
 
@@ -50,6 +50,18 @@ python scripts/run_competition_batch.py --organisations batch.jsonl --bulk brreg
 | `--workers` | 16 | Companies researched in parallel |
 
 The four official-register calls per company are reserved up front, so enrichment can never starve them. The measured numbers for this commit are in [SUBMISSION.md](SUBMISSION.md).
+
+### Optional keyed connectors
+
+Both are off unless the evaluator sets a key. Without keys the agent behaves exactly as measured in [SUBMISSION.md](SUBMISSION.md).
+
+| Environment variable | Service | What it adds | Cost counted per call |
+|---|---|---|---|
+| `SIGNALPOST_SEARCH_API_KEY` | Brave Search API | Candidate websites for companies with no site from the register. Candidates only: each still has to pass the identity gate | $0.005 |
+| `SIGNALPOST_PLACES_API_KEY` | Google Places API (New) | Google rating, review count and Maps link for a place matched by website, registry phone, or name plus registered address | $0.035 |
+| `SIGNALPOST_API_BUDGET_USD` | | Cap on declared spend per run. Default 8; paid calls stop when it is reached | |
+
+A key is sent only as a request header to the service's own host. It is never written to an envelope, report, log or URL.
 
 ### Refresh
 

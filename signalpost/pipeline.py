@@ -10,7 +10,7 @@ from .claims import Dossier
 from .footprint import build_footprint
 from .http import Fetcher
 from .refresh import apply_refresh
-from .sources import brreg, external, website
+from .sources import brreg, external, keyed, website
 from .synthesis import build_sections, synthesise
 from .util import utc_now, valid_org_number
 
@@ -23,7 +23,7 @@ def collect_company(organisation_number: str, fetcher: Fetcher, *, wikidata: dic
     options = options or {}
     context: dict[str, Any] = {
         "organisation_number": organisation_number, "dossier": Dossier(organisation_number), "entity": None, "financial_rows": [], "roles": [],
-        "locations": [], "site": None, "status": "failed", "started_at": utc_now(), "runtime": 0.0, "requests": 0,
+        "locations": [], "site": None, "status": "failed", "started_at": utc_now(), "runtime": 0.0, "requests": 0, "cost": 0.0,
     }
     started = time.monotonic()
     requests_before = fetcher.thread_requests()
@@ -52,8 +52,20 @@ def collect_company(organisation_number: str, fetcher: Fetcher, *, wikidata: dic
                     related = {str(item["organisation_number"]) for item in context["locations"] if item.get("organisation_number")}
                     context["site"] = website.collect_website(dossier, fetcher, entity, wikidata_site=wikidata_site, related_orgs=related,
                                                               allow_guess=options.get("guess_domains", True))
+                    if context["site"] is None and options.get("search", True) and keyed.search_key():
+                        urls, note = keyed.search_candidates(fetcher, entity)
+                        context["cost"] += keyed.SEARCH_COST_USD if note is None else 0.0
+                        tried = {website.registered_domain(website.host_of(error.get("source_url", ""))) for error in dossier.errors}
+                        urls = [url for url in urls if website.registered_domain(website.host_of(url)) not in tried]
+                        if note:
+                            dossier.error("search", "not_run", note)
+                        if urls:
+                            context["site"] = website.collect_website(dossier, fetcher, entity, related_orgs=related, search_urls=urls)
                 if options.get("reviews", True) and not entity.get("slettedato"):
                     external.collect_reviews(dossier, fetcher, entity)
+                    if options.get("places", True) and keyed.places_key():
+                        keyed.collect_places(dossier, fetcher, entity, (context["site"] or {}).get("registered_domain"))
+                        context["cost"] += keyed.PLACES_COST_USD if "places" in dossier.modules and dossier.modules["places"].get("note") != "external API budget reached" else 0.0
     except Exception as exc:  # noqa: BLE001 - one bad company must not take the batch down
         dossier.error("pipeline", "unhandled_exception", f"{type(exc).__name__}: {exc}"[:300])
         dossier.errors[-1]["trace"] = traceback.format_exc(limit=3)[-600:]
@@ -105,7 +117,7 @@ def finalise(context: dict[str, Any], *, run_id: str, previous: dict[str, Any] |
     envelope["sections"] = build_sections(envelope["claims"], envelope["modules"])
     envelope["summary"] = synthesise(envelope["claims"], envelope["sections"], envelope["changes"], envelope["refresh"])
     envelope["external_footprint"] = build_footprint(organisation_number, envelope["claims"], envelope["evidence"])
-    envelope["operations"] = {"requests": context["requests"], "runtime_ms": int(context["runtime"] * 1000), "third_party_cost_usd": 0}
+    envelope["operations"] = {"requests": context["requests"], "runtime_ms": int(context["runtime"] * 1000), "third_party_cost_usd": round(context.get("cost", 0.0), 4)}
     envelope["profile"] = _reference_profile(organisation_number, context["entity"], dossier, context["financial_rows"], context["roles"],
                                              context["locations"], context["site"])
     return envelope

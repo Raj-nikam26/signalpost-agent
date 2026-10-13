@@ -21,6 +21,7 @@ from . import SCHEMA_VERSION, __version__
 from .http import Budget, Fetcher
 from .pipeline import CORE_REQUESTS, collect_company, collect_jobs, failed_envelope, finalise
 from .refresh import load_envelopes, save_state
+from .sources import keyed
 from .sources.external import RateGate, nav_not_checked, wikidata_lookup
 from .util import AVAILABILITY_STATES, clean_org_number, utc_now, valid_org_number
 
@@ -202,7 +203,8 @@ def run_batch(args: Any) -> dict[str, Any]:
     history_mode = args.history
     account_history = history_mode == "on" or (history_mode == "auto" and count * 2.2 <= time_budget * 0.25)
     options = {"website": not args.no_website, "nav_jobs": not args.no_jobs, "guess_domains": not args.no_guess,
-               "registry_updates": not args.no_updates, "account_history": account_history, "reviews": not getattr(args, "no_reviews", False)}
+               "registry_updates": not args.no_updates, "account_history": account_history, "reviews": not getattr(args, "no_reviews", False),
+               "search": not getattr(args, "no_search", False), "places": not getattr(args, "no_places", False)}
     valid = [org for org in orgs if valid_org_number(org) and org not in resumed]
     wikidata = wikidata_lookup(fetcher, valid) if valid and not args.no_wikidata else {}
 
@@ -337,7 +339,8 @@ def run_batch(args: Any) -> dict[str, Any]:
             "p95_ms": latencies[min(len(latencies) - 1, int(len(latencies) * 0.95))] if latencies else None,
             "company_runtime_p50_ms": runtimes[len(runtimes) // 2], "company_runtime_p95_ms": runtimes[min(len(runtimes) - 1, int(len(runtimes) * 0.95))],
             "time_budget_minutes": float(args.time_budget_min), "within_time_budget": elapsed <= time_budget,
-            "within_request_budget": budget.used <= max_requests, "third_party_cost_usd": 0.0, "models": [], "workers": int(args.workers),
+            "within_request_budget": budget.used <= max_requests, "third_party_cost_usd": round(budget.cost_usd, 4), "third_party_cost_by_api": budget.cost_by_api,
+            "external_api_budget_usd": budget.max_cost_usd, "keyed_connectors_enabled": keyed.enabled(), "models": [], "workers": int(args.workers),
         },
         "modules_enabled": options, "registry": bulk_info or {"identity_anchor": "live Enhetsregisteret API, exact organisation-number lookup"},
         "errors": dict(Counter(f"{error['module']}:{error['code']}" for envelope in envelopes for error in envelope["errors"])),

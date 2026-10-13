@@ -31,6 +31,8 @@ def _add_run_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--no-guess", action="store_true", help="Never derive a candidate domain from the legal name")
     parser.add_argument("--no-updates", action="store_true")
     parser.add_argument("--no-reviews", action="store_true", help="Skip the trade-directory rating lookup")
+    parser.add_argument("--no-search", action="store_true", help="Do not use the search API even if SIGNALPOST_SEARCH_API_KEY is set")
+    parser.add_argument("--no-places", action="store_true", help="Do not use Google Places even if SIGNALPOST_PLACES_API_KEY is set")
     parser.add_argument("--no-wikidata", action="store_true")
     parser.add_argument("--site-output", default="out/site", help="Build the browsable profile site here ('' to skip)")
     parser.add_argument("--quiet", action="store_true")

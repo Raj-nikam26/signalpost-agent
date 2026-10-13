@@ -9,7 +9,7 @@ from typing import Any
 
 PLATFORMS = {"linkedin", "facebook", "instagram", "x", "youtube", "tiktok"}
 SOURCE_CLASS = {"official_registry": "official_registry", "official_annual_accounts": "official_registry", "company_owned": "company_site",
-                "public_job_board": "job_board", "open_knowledge_base": "open_knowledge_base", "public_directory": "customer_review"}
+                "public_job_board": "job_board", "open_knowledge_base": "open_knowledge_base", "public_directory": "customer_review", "licensed_places_api": "customer_review"}
 
 
 def build_footprint(organisation_number: str, claims: list[dict[str, Any]], evidence: list[dict[str, Any]]) -> dict[str, Any]:
@@ -44,6 +44,11 @@ def build_footprint(organisation_number: str, claims: list[dict[str, Any]], evid
                 proof="organisation_number_on_advert_page" if nav else "verified_company_site", url=value.get("url"))
         elif field == "company_news_item":
             add(claim, "company_site", "public_post", mode="permitted_public_page", proof="verified_company_site", url=value.get("url"))
+        elif field == "review_summary" and claim["key"] == "reviews.google":
+            add(claim, "google_places", "review_summary", mode="official_api", proof="places_identity_match", url=value.get("listing_url"),
+                metrics={"rating": value["rating"], "review_count": value["review_count"], "scale": value["scale"]})
+        elif field == "google_maps_place":
+            add(claim, "google_places", "place_summary", mode="official_api", proof="places_identity_match", url=value.get("url"))
         elif field == "review_summary":
             add(claim, "company_directory", "review_summary", mode="permitted_public_page", rights="review_required",
                 proof="organisation_number_in_directory_structured_data", url=value.get("listing_url"),

@@ -3,7 +3,7 @@
 ## Coverage
 
 - **Most small companies have no verifiable website.** In a random 100-company sample only about one in ten reaches a verified official website. The public universe is dominated by holding and property companies with no site. Without a search provider, a site is found only when the register lists it, Wikidata lists it, the email domain relates to the name, or `<legalname>.no` exists.
-- **No web search.** A keyed search API would raise website discovery, but it would tie the run to a personal credential. It is the first thing to add if the organiser supplies a key.
+- **Web search is built but untested live.** The Brave Search and Google Places connectors are implemented and covered by tests against saved sample responses, but they have never been run against the real services because no key was available. They stay off unless the evaluator sets a key. The measured numbers in SUBMISSION.md are all without them.
 - **Static HTML only.** Sites that render everything with JavaScript give too little text to verify and are reported as `ambiguous`.
 - **Job postings are under-counted.** Postings are published from the verified site only when they are structured data (`JobPosting`) or links to a known applicant-tracking host. Free-text vacancy pages are recorded as a careers page without individual postings.
 - **NAV's job board is rate-limited to a few requests a minute.** The agent searches it slowly, largest employers first, and stops after three consecutive HTTP 429 answers. Companies not reached are marked `blocked` with that reason. During development the board refused every request for more than 15 minutes after a burst of about 200 requests.

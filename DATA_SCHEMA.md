@@ -81,7 +81,7 @@ One JSON object per input organisation number, one per line, in input order. The
 }
 ```
 
-`source_class` is one of `official_registry`, `official_annual_accounts`, `company_owned`, `public_job_board`, `public_directory`, `open_knowledge_base`. `redirect_chain` and `requested_url` are present when the final URL differs from the requested one. Evidence and claim ids are hashes of their content, so a rerun produces the same ids.
+`source_class` is one of `official_registry`, `official_annual_accounts`, `company_owned`, `public_job_board`, `public_directory`, `open_knowledge_base`, and `licensed_places_api` when the optional Places connector is on. `redirect_chain` and `requested_url` are present when the final URL differs from the requested one. Evidence and claim ids are hashes of their content, so a rerun produces the same ids.
 
 ## Change
 

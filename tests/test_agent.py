@@ -23,7 +23,7 @@ from signalpost.util import find_org_numbers, parse_date, valid_org_number
 ORG = "923609016"
 OTHER = "914778271"
 API = "https://data.brreg.no/enhetsregisteret/api"
-OFFLINE = {"website": False, "nav_jobs": False, "registry_updates": False, "account_history": False, "reviews": False}
+OFFLINE = {"website": False, "nav_jobs": False, "registry_updates": False, "account_history": False, "reviews": False, "search": False, "places": False}
 
 
 def entity(**overrides):
@@ -324,6 +324,82 @@ class ExternalSources(unittest.TestCase):
         self.assertTrue(all(item["exact_entity"] and len(item["content_sha256"]) == 64 for item in observations))
         unknown = run(snapshot(ent=entity(harRegistrertAntallAnsatte=False, antallAnsatte=None)))
         self.assertEqual(unknown["external_footprint"]["observations"], [])
+
+
+class KeyedConnectors(unittest.TestCase):
+    """Run against saved sample responses; no key and no network are needed."""
+
+    SEARCH = {"web": {"results": [
+        {"url": "https://www.proff.no/selskap/nordlys-bakeri-as/1", "title": "t"}, {"url": "https://www.facebook.com/nordlysbakeri", "title": "t"},
+        {"url": "https://www.unrelated-news.no/artikkel", "title": "t"}, {"url": "https://www.nordlysbakeri.no/om-oss", "title": "t"}]}}
+    PLACE = {"id": "ChIJabc", "displayName": {"text": "Nordlys Bakeri"}, "formattedAddress": "Storgata 1, 9008 Tromsø, Norge",
+             "postalAddress": {"postalCode": "9008"}, "nationalPhoneNumber": "77 60 00 00", "websiteUri": "https://www.nordlysbakeri.no/",
+             "rating": 4.4, "userRatingCount": 128, "googleMapsUri": "https://maps.google.com/?cid=1"}
+
+    def setUp(self):
+        import os
+        from signalpost.sources import keyed
+        self.keyed = keyed
+        self.saved = {name: os.environ.get(name) for name in ("SIGNALPOST_SEARCH_API_KEY", "SIGNALPOST_PLACES_API_KEY", "BRAVE_SEARCH_API_KEY", "GOOGLE_PLACES_API_KEY")}
+        for name in self.saved:
+            os.environ.pop(name, None)
+        self.addCleanup(lambda: [os.environ.__setitem__(k, v) if v is not None else os.environ.pop(k, None) for k, v in self.saved.items()])
+
+    def api(self, body, seen):
+        class Api(Fetcher):
+            def get(self, url, **kwargs):
+                seen.append((url, kwargs.get("headers") or {}, kwargs.get("data")))
+                return Response(url=url, final_url=url, status=200, raw=json.dumps(body).encode("utf-8"), retrieved_at="2026-08-01T00:00:00Z")
+        return Api(Budget(100))
+
+    def test_connectors_are_off_without_a_key(self):
+        seen = []
+        self.assertEqual(self.keyed.search_candidates(self.api(self.SEARCH, seen), entity()), ([], None))
+        self.assertFalse(self.keyed.collect_places(Dossier(ORG), self.api({"places": [self.PLACE]}, seen), entity(), None))
+        self.assertEqual(seen, [])
+        self.assertEqual(self.keyed.enabled(), {"search": False, "places": False})
+
+    def test_search_returns_candidates_only_and_drops_directories(self):
+        import os
+        os.environ["SIGNALPOST_SEARCH_API_KEY"] = "test-key-not-real"
+        seen = []
+        fetcher = self.api(self.SEARCH, seen)
+        urls, note = self.keyed.search_candidates(fetcher, entity())
+        self.assertEqual(urls[0], "https://www.nordlysbakeri.no/")
+        self.assertFalse([url for url in urls if "proff" in url or "facebook" in url])
+        self.assertIsNone(note)
+        self.assertEqual(seen[0][1]["X-Subscription-Token"], "test-key-not-real")
+        self.assertNotIn("test-key-not-real", seen[0][0])  # the key travels in a header, never in the URL
+        self.assertAlmostEqual(fetcher.budget.cost_usd, self.keyed.SEARCH_COST_USD)
+
+    def test_search_candidate_still_needs_on_site_proof(self):
+        html = "<title>Nordlys Bakeri AS</title>" + "<p>Vi baker brød hver dag og leverer til hele byen.</p>" * 5
+        self.assertEqual(assess_identity(entity(hjemmeside=None), crawl_of(html, origin="search"))["status"], "ambiguous")
+        proven = html + "<footer>Org.nr 923 609 016</footer>"
+        self.assertEqual(assess_identity(entity(hjemmeside=None), crawl_of(proven, origin="search"))["status"], "exact")
+
+    def test_place_is_published_only_on_an_identity_match(self):
+        import os
+        os.environ["SIGNALPOST_PLACES_API_KEY"] = "test-key-not-real"
+        seen = []
+        dossier = Dossier(ORG)
+        self.assertTrue(self.keyed.collect_places(dossier, self.api({"places": [self.PLACE]}, seen), entity(), "nordlysbakeri.no"))
+        self.assertEqual(dossier.claims["reviews.google"]["value"]["review_count"], 128)
+        self.assertNotIn("test-key-not-real", json.dumps([dossier.claims, dossier.evidence, dossier.modules]))
+        namesake = dict(self.PLACE, formattedAddress="Havnegata 9, 5003 Bergen, Norge", postalAddress={"postalCode": "5003"},
+                        nationalPhoneNumber="55 11 22 33", websiteUri="https://nordlys-bakeri-bergen.no/")
+        other = Dossier(ORG)
+        self.assertFalse(self.keyed.collect_places(other, self.api({"places": [namesake]}, seen), entity(), "nordlysbakeri.no"))
+        self.assertEqual(other.claims["reviews.google"]["availability"], "ambiguous")
+        self.assertNotIn("profile.google_maps", other.claims)
+
+    def test_paid_calls_stop_at_the_declared_budget(self):
+        budget = Budget(100)
+        budget.max_cost_usd = 0.01
+        self.assertTrue(budget.spend("brave_search", 0.005))
+        self.assertTrue(budget.spend("brave_search", 0.005))
+        self.assertFalse(budget.spend("google_places", 0.035))
+        self.assertAlmostEqual(budget.cost_usd, 0.01)
 
 
 class Refresh(unittest.TestCase):

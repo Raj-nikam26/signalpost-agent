@@ -2,9 +2,9 @@
   "agent": "signalpost-agent/1.0.0",
   "schema_version": "signalpost-envelope/1.0",
   "run_id": "smoke-100-run1",
-  "started_at": "2026-10-13T03:22:38Z",
-  "completed_at": "2026-10-13T03:26:43Z",
-  "runtime_seconds": 246.1,
+  "started_at": "2026-10-13T04:44:56Z",
+  "completed_at": "2026-10-13T04:50:13Z",
+  "runtime_seconds": 318.3,
   "expected_count": 100,
   "input": {
     "source": "data/smoke-100.jsonl",
@@ -50,8 +50,8 @@
       "available": 7
     },
     "hiring": {
-      "blocked": 92,
-      "not_available": 6,
+      "blocked": 86,
+      "not_available": 12,
       "available": 2
     },
     "reviews": {
@@ -156,7 +156,7 @@
     },
     "published_claims_total": 8037,
     "claims_per_company_mean": 80.4,
-    "evidence_records_total": 8269
+    "evidence_records_total": 8279
   },
   "website_identity_gate": {
     "not_available": 75,
@@ -174,27 +174,33 @@
     "previous_source": null
   },
   "operations": {
-    "requests": 852,
+    "requests": 869,
     "request_budget": 2000,
-    "requests_per_company_mean": 8.52,
+    "requests_per_company_mean": 8.69,
     "requests_by_source_class": {
       "company_owned": 142,
       "official_annual_accounts": 100,
-      "official_registry": 504,
+      "official_registry": 507,
       "open_knowledge_base": 2,
-      "public_directory": 101,
-      "public_job_board": 3
+      "public_directory": 105,
+      "public_job_board": 13
     },
     "dns_lookups": 185,
-    "bytes": 11074030,
-    "p50_ms": 882,
-    "p95_ms": 2410,
-    "company_runtime_p50_ms": 32463,
-    "company_runtime_p95_ms": 42919,
+    "bytes": 11105965,
+    "p50_ms": 941,
+    "p95_ms": 2329,
+    "company_runtime_p50_ms": 32260,
+    "company_runtime_p95_ms": 44693,
     "time_budget_minutes": 40.0,
     "within_time_budget": true,
     "within_request_budget": true,
     "third_party_cost_usd": 0.0,
+    "third_party_cost_by_api": {},
+    "external_api_budget_usd": 8.0,
+    "keyed_connectors_enabled": {
+      "search": false,
+      "places": false
+    },
     "models": [],
     "workers": 16
   },
@@ -204,7 +210,9 @@
     "guess_domains": true,
     "registry_updates": true,
     "account_history": true,
-    "reviews": true
+    "reviews": true,
+    "search": true,
+    "places": true
   },
   "registry": {
     "identity_anchor": "live Enhetsregisteret API, exact organisation-number lookup"

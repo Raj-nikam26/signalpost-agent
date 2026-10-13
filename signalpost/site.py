@@ -40,6 +40,8 @@ def index_row(envelope: dict[str, Any]) -> dict[str, Any]:
         "jobs": sum(1 for claim in claims if claim["field"] == "job_posting"),
         "profiles": sum(1 for claim in claims if claim["field"] in {"social_profile", "wikidata_item", "wikipedia_article"}),
         "claims": len(claims), "changes": len(envelope.get("changes") or []),
+        "has": sorted({claim["family"] for claim in claims}),
+        "rating": next((claim["value"]["rating"] for claim in claims if claim["field"] == "review_summary"), None),
     }
     return {key: value for key, value in row.items() if value is not None}
 

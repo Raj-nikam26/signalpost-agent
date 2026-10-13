@@ -9,9 +9,9 @@
 | 100-company smoke-test result | [reports/smoke-100/run-report.json](reports/smoke-100/run-report.json), envelopes in `reports/smoke-100/envelopes.jsonl.gz` |
 | One command to run | See below |
 | Models / APIs / licences | See below |
-| Expected cost per official run | $0 |
+| Expected cost per official run | $0 without keys. With the optional connectors switched on: capped at $8 per run by default |
 | 1,000 company profiles | `reports/batch-1000/envelopes-1000.jsonl.gz`, report in [reports/batch-1000/run-report.json](reports/batch-1000/run-report.json) |
-| Browsable sample | `docs/index.html` (the 100 smoke-test profiles; works from disk or GitHub Pages) |
+| Browsable dashboard | `docs/index.html` (the 100 smoke-test profiles: overview charts, sortable register, evidence drawer, compare; works from disk or GitHub Pages) |
 
 ## One command
 
@@ -37,6 +37,18 @@ Reference-runner flags (`--bulk`, `--profiles-output`, `--run-id`, `--expected-c
 | Fagfolkguiden.no | Public trade-directory pages, robots.txt allows `/bedrift/`; one aggregate rating per company |
 | Dependencies | Python standard library only |
 
+## Optional keyed connectors (off by default)
+
+Two connectors are in the code at this commit and switch on only when the evaluator sets a key. They exist because website discovery is what limits recall, and the challenge page says a key can be supplied on request.
+
+| Variable | Service | Adds | Declared cost |
+|---|---|---|---|
+| `SIGNALPOST_SEARCH_API_KEY` | Brave Search API | Candidate websites for companies with no verified site. Candidates only; the identity gate is unchanged | $0.005 per company searched |
+| `SIGNALPOST_PLACES_API_KEY` | Google Places API (New) | Google rating, review count, Maps link for an identity-matched place | $0.035 per company |
+| `SIGNALPOST_API_BUDGET_USD` | | Spend cap per run, default 8 | |
+
+They are covered by tests against saved sample responses. **They have not been run against the live services**, because no key was available, so the first keyed run is also their first live test. All numbers below are without keys.
+
 ## Measured runs
 
 Both batches were drawn from the public 411,160-company universe with a fixed seed (`python -m signalpost select`, seeds 20261013 and 424242). Run from a home connection in India, about 0.9 s per request to the Norwegian register.
@@ -47,8 +59,8 @@ Both batches were drawn from the public 411,160-company universe with a fixed se
 |---|---|
 | Companies in / envelopes out | 100 / 100 |
 | Terminal states | available 100 |
-| Runtime | 246 s (210 s of it is the rate-limited filing-years endpoint, used only for small batches) |
-| Outbound requests | 852 (8.5 per company) |
+| Runtime | 318 s (210 s of it is the rate-limited filing-years endpoint, used only for small batches; about 70 s is the throttled job board) |
+| Outbound requests | 869 (8.7 per company) |
 | External API cost | $0 |
 | Published facts | 8,037 (80 per company), 8,269 evidence records |
 | Website gate | verified 8, ambiguous 17, no usable candidate 75 |
@@ -64,7 +76,7 @@ Both batches were drawn from the public 411,160-company universe with a fixed se
 | Official website (verified or labelled group site) | 10 | not_available 75, ambiguous 15 |
 | Company-owned profiles | 5 | not_available 95 |
 | Contact details | 7 | not_available 93 |
-| Hiring | 2 | blocked 92, not_available 6 |
+| Hiring | 2 | blocked 86, not_available 12 |
 | Customer reviews | 3 | not_available 97 |
 | Dated public activity | 100 | none |
 
@@ -78,8 +90,8 @@ Both batches were drawn from the public 411,160-company universe with a fixed se
 |---|---|
 | Companies in / envelopes out | 1,000 / 1,000 |
 | Terminal states | available 1,000 |
-| Runtime | 802 s (13.4 minutes) |
-| Outbound requests | 7,831 (7.8 per company) |
+| Runtime | 628 s (10.5 minutes) |
+| Outbound requests | 7,824 (7.8 per company) |
 | External API cost | $0 |
 | Published facts | 78,594 (79 per company), 80,759 evidence records |
 | Website gate | verified 131, ambiguous 148, blocked 16, no usable candidate 705 |
@@ -101,7 +113,7 @@ Both batches were drawn from the public 411,160-company universe with a fixed se
 
 ### Read these numbers with care
 
-- **Hiring is mostly `blocked`.** NAV's job board answered HTTP 429 to all three requests in each of these runs, after earlier development bursts. The agent stopped asking, as designed. In a separate 3-company run from the same machine the board did answer and two Equinor adverts were verified by organisation number, so the path works when the board is not rate-limiting.
+- **Hiring is mostly `blocked`.** NAV's job board answered a handful of searches in the smoke run and then HTTP 429; in the other runs it refused from the first request. The agent stopped asking after three refusals, as designed. In a separate 3-company run from the same machine the board did answer and two Equinor adverts were verified by organisation number, so the path works when the board is not rate-limiting.
 - **"Dated public activity" is 100% because of the register's update feed**, which exists for every company. Dated news from company sites is far rarer.
 - **Customer reviews cover trades only** (27 of 1,000). The source is a third-party directory that Builderr's reference kit marks "rights review required".
 - **Wrong-company check**: every name-based website match in the 100-company sample and 45 in an earlier 1,000-company run were read by hand by the author; none looked wrong. There is no independent label set.
@@ -111,8 +123,8 @@ Both batches were drawn from the public 411,160-company universe with a fixed se
 
 | Limit | Assumed | Measured |
 |---|---|---|
-| Time | 45 minutes | 4.1 minutes for 100 companies, 13.4 minutes for 1,000 |
-| Requests | 2,000 per 100 companies | 852 per 100 companies |
+| Time | 45 minutes | 5.3 minutes for 100 companies, 10.5 minutes for 1,000 |
+| Requests | 2,000 per 100 companies | 869 per 100 companies |
 | External API cost | $10 | $0 |
 
 The exact official limits are not published on the challenge page; `--time-budget-min` and `--max-requests` set them.
@@ -135,7 +147,12 @@ One-command run instruction:
 Models / APIs / licences: no language model, no paid API, no credentials.
   Brønnøysund open APIs (NLOD 2.0), Wikidata Query Service (CC0), public company websites (robots.txt honoured),
   NAV arbeidsplassen.no public job board (throttled), Fagfolkguiden.no public directory pages (customer rating).
-Expected cost per official run: $0 external API cost. Measured 852 requests and 4.1 minutes per 100 companies;
-  7,831 requests and 13.4 minutes per 1,000 companies.
+Expected cost per official run: $0 external API cost without keys (capped at $8 if you switch on the optional connectors). Measured 869 requests and 5.3 minutes per 100 companies;
+  7,824 requests and 10.5 minutes per 1,000 companies.
 Contact for results: <your email>
+
+Request: could you supply a search API key for official runs? The agent already contains a Brave Search connector
+(and a Google Places connector) that switch on when SIGNALPOST_SEARCH_API_KEY / SIGNALPOST_PLACES_API_KEY are set.
+Search results are used only as candidate websites; every site must still pass the organisation-number identity
+gate before anything is published. Without a key the agent runs exactly as in the attached smoke test.
 ```
