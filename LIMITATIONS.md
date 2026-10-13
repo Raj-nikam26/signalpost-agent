@@ -9,7 +9,8 @@
 - **NAV's job board is rate-limited to a few requests a minute.** The agent searches it slowly, largest employers first, and stops after three consecutive HTTP 429 answers. Companies not reached are marked `blocked` with that reason. During development the board refused every request for more than 15 minutes after a burst of about 200 requests.
 - **Dated news needs a feed, `<time>` elements or structured data.** Sites that show news without machine-readable dates yield no news items.
 - **Annual accounts cover what the register's API returns**: normally the latest one to three fiscal years. Older years are listed with their official PDF link (small batches only), not parsed. Banks and insurers can return an error from the normalised endpoint and are then reported as `failed` for accounts.
-- **No ownership, reviews, sentiment or traffic.** No permitted, exact-company free source was found, so the profile states that these are unknown.
+- **Customer ratings cover trades only.** The rating comes from the Fagfolkguiden directory, which lists craft and trade businesses; about 3% of a random batch has one. It is a third-party display of an aggregate rating, and Builderr's reference kit marks the source as needing a rights review.
+- **No ownership, sentiment or traffic.** No permitted, exact-company free source was found, so the profile states that these are unknown.
 
 ## Identity
 

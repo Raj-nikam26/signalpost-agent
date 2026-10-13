@@ -23,7 +23,7 @@ from signalpost.util import find_org_numbers, parse_date, valid_org_number
 ORG = "923609016"
 OTHER = "914778271"
 API = "https://data.brreg.no/enhetsregisteret/api"
-OFFLINE = {"website": False, "nav_jobs": False, "registry_updates": False, "account_history": False}
+OFFLINE = {"website": False, "nav_jobs": False, "registry_updates": False, "account_history": False, "reviews": False}
 
 
 def entity(**overrides):
@@ -279,6 +279,51 @@ class IdentityGate(unittest.TestCase):
 
     def test_feed_parser_needs_dates(self):
         self.assertEqual(parse_feed("<rss><channel><item><title>Uten dato</title><link>https://x.no/a</link></item></channel></rss>"), [])
+
+
+class ExternalSources(unittest.TestCase):
+    PAGE = ('<html><head><script type="application/ld+json">{"@type":"LocalBusiness","name":"NORDLYS BAKERI AS",'
+            '"identifier":{"@type":"PropertyValue","name":"Organisasjonsnummer","value":"%s"},'
+            '"aggregateRating":{"@type":"AggregateRating","ratingValue":4.6,"bestRating":5,"ratingCount":31}}</script></head><body>x</body></html>')
+
+    def fetcher(self, html, status=200):
+        class Directory(Fetcher):
+            def get(self, url, **_):
+                response = page_response(url, html)
+                response.status = status
+                return response
+
+            def robots_allows(self, url, source_class):
+                return True
+        return Directory()
+
+    def test_rating_needs_the_organisation_number_in_structured_data(self):
+        from signalpost.sources.external import collect_reviews
+        good = Dossier(ORG)
+        self.assertTrue(collect_reviews(good, self.fetcher(self.PAGE % ORG), entity()))
+        self.assertEqual(good.claims["reviews.rating"]["value"]["rating"], 4.6)
+        self.assertEqual(good.claims["reviews.rating"]["value"]["review_count"], 31)
+        other = Dossier(ORG)
+        self.assertFalse(collect_reviews(other, self.fetcher(self.PAGE % OTHER), entity()))
+        self.assertEqual(other.claims["reviews.rating"]["availability"], "ambiguous")
+        missing = Dossier(ORG)
+        self.assertFalse(collect_reviews(missing, self.fetcher("", status=404), entity()))
+        self.assertEqual(missing.claims["reviews.rating"]["availability"], "not_available")
+
+    def test_domain_guesses_are_candidates_only(self):
+        from signalpost.sources.website import guess_hosts
+        hosts = guess_hosts("RØRLEGGER JOHANNESEN AS")
+        self.assertIn("rorleggerjohannesen.no", hosts)
+        self.assertIn("roerlegger-johannesen.no", hosts)
+        self.assertEqual(guess_hosts("AS"), [])
+
+    def test_footprint_mirrors_published_claims_only(self):
+        envelope = run(snapshot(acc=accounts()))
+        observations = envelope["external_footprint"]["observations"]
+        self.assertEqual([item["signal_type"] for item in observations], ["workforce_snapshot"])
+        self.assertTrue(all(item["exact_entity"] and len(item["content_sha256"]) == 64 for item in observations))
+        unknown = run(snapshot(ent=entity(harRegistrertAntallAnsatte=False, antallAnsatte=None)))
+        self.assertEqual(unknown["external_footprint"]["observations"], [])
 
 
 class Refresh(unittest.TestCase):

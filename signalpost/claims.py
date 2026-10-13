@@ -13,6 +13,7 @@ OFFICIAL_ACCOUNTS = "official_annual_accounts"
 COMPANY_OWNED = "company_owned"
 PUBLIC_JOB_BOARD = "public_job_board"
 OPEN_KNOWLEDGE = "open_knowledge_base"
+PUBLIC_DIRECTORY = "public_directory"
 
 LICENCES = {
     OFFICIAL: "NLOD 2.0 (Norwegian Licence for Open Government Data)",
@@ -20,6 +21,7 @@ LICENCES = {
     COMPANY_OWNED: "Public company-owned page; robots.txt honoured; facts only, no bulk republication",
     PUBLIC_JOB_BOARD: "NAV arbeidsplassen.no public job listing; robots.txt permits access",
     OPEN_KNOWLEDGE: "CC0 1.0 (Wikidata)",
+    PUBLIC_DIRECTORY: "Public directory page; robots.txt permits /bedrift/ pages; one aggregate figure recorded, no review text",
 }
 
 

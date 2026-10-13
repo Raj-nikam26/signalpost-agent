@@ -12,7 +12,8 @@
 | Enhetsregisteret update feed | `…/oppdateringer/enheter?organisasjonsnummer={org}` | Dates of registry changes in the last 12 months | NLOD 2.0 | 1 per company |
 | Annual-account copies | `…/regnskap/aarsregnskap/kopi/{org}/aar` | Every filed year with the official PDF link | NLOD 2.0; about 30 requests a minute | 1 per company, only when the batch is small enough (`--history`) |
 | Wikidata Query Service | `query.wikidata.org/sparql` | Wikidata and Wikipedia links, website candidate | CC0 | 1 per 60 companies |
-| Company website | Homepage, up to two contact/about pages, careers page, news page or feed | Verified website, brand, description, social profile links, mailbox, jobs, dated news | Public company-owned pages; robots.txt honoured; facts only | 0 to 7 per company |
+| Company website | Homepage, up to two contact/about pages, careers page, news page or feed; up to three candidate sites | Verified website, brand, description, social profile links, mailbox, jobs, dated news | Public company-owned pages; robots.txt honoured; facts only | 0 to 7 per company |
+| Fagfolkguiden.no | `fagfolkguiden.no/bedrift/{name}-{org}` | Aggregate customer rating and review count shown on the company's directory page | Public page; robots.txt allows `/bedrift/`; one aggregate figure, no review text. Builderr's reference kit marks this source "rights review required", and the observation block carries that flag | 1 per company |
 | NAV arbeidsplassen.no | Public search and advert pages | Open positions | Public government job board; robots.txt allows all paths; heavily rate-limited | 0 to 4 per company, throttled |
 
 No source needs an API key, an account or a paid plan.
@@ -33,7 +34,7 @@ No source needs an API key, an account or a paid plan.
 1. Website reported to the register
 2. Website on the Wikidata item that carries the organisation number
 3. Domain of the reported email address, if it relates to the legal name
-4. `<legalname>.no`, after a DNS check, if nothing else exists
+4. `<legalname>.no` (also with `oe`/`aa` spellings and a hyphenated form), after a DNS check. `.com` and shortened names were tried on 1,000 companies and dropped: they found namesakes, never the company
 
 Static HTML only. A page with too little readable text is reported as `ambiguous`; no browser is launched.
 

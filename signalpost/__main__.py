@@ -30,6 +30,7 @@ def _add_run_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--no-jobs", action="store_true")
     parser.add_argument("--no-guess", action="store_true", help="Never derive a candidate domain from the legal name")
     parser.add_argument("--no-updates", action="store_true")
+    parser.add_argument("--no-reviews", action="store_true", help="Skip the trade-directory rating lookup")
     parser.add_argument("--no-wikidata", action="store_true")
     parser.add_argument("--site-output", default="out/site", help="Build the browsable profile site here ('' to skip)")
     parser.add_argument("--quiet", action="store_true")

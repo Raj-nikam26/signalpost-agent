@@ -185,7 +185,7 @@ class Fetcher:
         self._context = ssl.create_default_context()
         self._opener = urllib.request.build_opener(_NoRedirect, urllib.request.HTTPSHandler(context=self._context))
         self._host_locks: dict[str, threading.Semaphore] = {}
-        self._host_limits = {"data.brreg.no": 12, "arbeidsplassen.nav.no": 4, "query.wikidata.org": 1}
+        self._host_limits = {"data.brreg.no": 12, "arbeidsplassen.nav.no": 4, "query.wikidata.org": 1, "www.fagfolkguiden.no": 3}
         self._robots: dict[str, urllib.robotparser.RobotFileParser | None] = {}
         self._lock = threading.Lock()
         self._local = threading.local()

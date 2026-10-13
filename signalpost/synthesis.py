@@ -19,6 +19,7 @@ SECTION_FAMILIES = [
     ("company_profiles", "Company-owned profiles"),
     ("contact", "Contact details"),
     ("hiring", "Hiring"),
+    ("reviews", "Customer reviews"),
     ("public_activity", "Dated public activity"),
 ]
 
@@ -48,7 +49,7 @@ def build_sections(claims: list[dict[str, Any]], modules: dict[str, Any]) -> dic
             note = " ".join(dict.fromkeys(claim["explanation"] for claim in members if claim.get("explanation")))
         elif family == "group_structure":
             state, note = "not_applicable", "The registry does not flag this entity as part of a group."
-        elif family in {"company_profiles", "contact", "public_activity", "hiring"}:
+        elif family in {"company_profiles", "contact", "public_activity", "hiring", "reviews"}:
             state, note = "not_available", "No verified company-owned or organisation-number-keyed source yielded this information."
         else:
             state, note = "not_available", "The source was not reached in this run."
@@ -215,6 +216,10 @@ def synthesise(envelope_claims: list[dict[str, Any]], sections: dict[str, Any], 
         say("hiring", f"It appears to be hiring: {len(jobs)} open position{'s' if len(jobs) != 1 else ''} were verified, including {titles}.",
             [claim["key"] for claim in jobs[:6]])
         signals.append({"signal": "hiring", "severity": "info", "text": f"{len(jobs)} verified open position(s).", "claim_ids": [claim["id"] for claim in jobs[:6]]})
+    rating = val("reviews.rating")
+    if rating:
+        say("reputation", f"Customers rate it {rating['rating']:g} out of {rating['scale']:g} across {rating['review_count']} review"
+                          f"{'s' if rating['review_count'] != 1 else ''}, as shown by {rating['shown_by']}.", ["reviews.rating"])
     news = sorted((claim for claim in envelope_claims if claim["field"] == "company_news_item" and claim["availability"] == "available"),
                   key=lambda claim: claim["value"].get("published", ""), reverse=True)
     if news:
@@ -240,7 +245,7 @@ def synthesise(envelope_claims: list[dict[str, Any]], sections: dict[str, Any], 
         claim = claims.get(key)
         if claim and claim["availability"] != "available":
             unknowns.append({"topic": topic, "availability": claim["availability"], "explanation": claim.get("explanation")})
-    unknowns.append({"topic": "Ownership, customer reviews, sentiment and web traffic", "availability": "not_available",
+    unknowns.append({"topic": "Ownership, sentiment and web traffic", "availability": "not_available",
                      "explanation": "No permitted, exact-company source for these was used, so the profile makes no claim about them."})
     return {
         "headline": headline,

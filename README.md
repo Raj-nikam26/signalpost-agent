@@ -90,6 +90,7 @@ python -m signalpost select --universe signalpost-company-universe-2025.jsonl.gz
 | Verified official website, public brand, description | Company site | organisation number on the site, or registry-reported site plus full legal name |
 | Company-owned social profiles, contact mailbox | Links on the verified site | verified site plus handle match |
 | Open positions | Verified site (structured data) and NAV's job board | verified site; advert page states the organisation number |
+| Customer rating | Fagfolkguiden trade-directory page | organisation number in the page's structured data |
 | Dated activity | Company news feed, registry update feed | verified site; organisation number |
 | Wikidata and Wikipedia links | Wikidata | property P2333 (organisation number) |
 

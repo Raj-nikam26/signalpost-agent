@@ -7,6 +7,7 @@ from typing import Any
 
 from . import SCHEMA_VERSION, __version__
 from .claims import Dossier
+from .footprint import build_footprint
 from .http import Fetcher
 from .refresh import apply_refresh
 from .sources import brreg, external, website
@@ -51,6 +52,8 @@ def collect_company(organisation_number: str, fetcher: Fetcher, *, wikidata: dic
                     related = {str(item["organisation_number"]) for item in context["locations"] if item.get("organisation_number")}
                     context["site"] = website.collect_website(dossier, fetcher, entity, wikidata_site=wikidata_site, related_orgs=related,
                                                               allow_guess=options.get("guess_domains", True))
+                if options.get("reviews", True) and not entity.get("slettedato"):
+                    external.collect_reviews(dossier, fetcher, entity)
     except Exception as exc:  # noqa: BLE001 - one bad company must not take the batch down
         dossier.error("pipeline", "unhandled_exception", f"{type(exc).__name__}: {exc}"[:300])
         dossier.errors[-1]["trace"] = traceback.format_exc(limit=3)[-600:]
@@ -101,6 +104,7 @@ def finalise(context: dict[str, Any], *, run_id: str, previous: dict[str, Any] |
     apply_refresh(envelope, previous)
     envelope["sections"] = build_sections(envelope["claims"], envelope["modules"])
     envelope["summary"] = synthesise(envelope["claims"], envelope["sections"], envelope["changes"], envelope["refresh"])
+    envelope["external_footprint"] = build_footprint(organisation_number, envelope["claims"], envelope["evidence"])
     envelope["operations"] = {"requests": context["requests"], "runtime_ms": int(context["runtime"] * 1000), "third_party_cost_usd": 0}
     envelope["profile"] = _reference_profile(organisation_number, context["entity"], dossier, context["financial_rows"], context["roles"],
                                              context["locations"], context["site"])
@@ -142,6 +146,7 @@ def failed_envelope(organisation_number: str, run_id: str, code: str, message: s
         if section["availability"] != "available":
             section.update({"availability": "failed", "explanation": message})
     envelope["summary"] = synthesise(envelope["claims"], envelope["sections"], envelope["changes"], envelope["refresh"])
+    envelope["external_footprint"] = build_footprint(organisation_number, envelope["claims"], envelope["evidence"])
     envelope["operations"] = {"requests": 0, "runtime_ms": 0, "third_party_cost_usd": 0}
     envelope["profile"] = {"organisation_number": organisation_number, "evidence": {}}
     return envelope

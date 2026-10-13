@@ -13,13 +13,13 @@ from typing import Any
 from .util import canonical_json, short_hash
 
 # Families where a claim that disappears from a healthy source is a real-world change.
-REMOVAL_IS_CHANGE = {"legal_identity", "leadership", "workplaces", "group_structure", "official_website", "company_profiles", "contact"}
+REMOVAL_IS_CHANGE = {"reviews", "legal_identity", "leadership", "workplaces", "group_structure", "official_website", "company_profiles", "contact"}
 # Families whose older items simply age out of the fetched window; they are kept as history, not reported as removed.
 KEEP_AS_HISTORY = {"annual_accounts", "public_activity"}
 MODULE_OF_FAMILY = {
     "legal_identity": "registry", "annual_accounts": "financials", "leadership": "roles", "workplaces": "locations",
     "group_structure": "group", "official_website": "website", "company_profiles": "website", "contact": "website",
-    "hiring": "website", "public_activity": "website",
+    "hiring": "website", "public_activity": "website", "reviews": "reviews",
 }
 HIGH = {"legal_name", "company_status", "legal_form", "accounts_filing", "official_website"}
 HIGH_ROLES = {"DAGL", "LEDE", "INNH"}

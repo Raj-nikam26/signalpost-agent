@@ -7,8 +7,9 @@
 3. **Collect official facts** by number: annual accounts, roles, sub-units, group structure, update feed.
 4. **Resolve the website.** Build candidates, crawl the homepage and up to two contact/about pages, and run the identity gate ([IDENTITY_RESOLUTION.md](IDENTITY_RESOLUTION.md)).
 5. **Only if the gate says `exact`:** fetch the careers page and the news page or feed, then publish description, brand, social profiles, contact mailbox, job postings and dated news.
-6. **Search NAV's job board** by legal name. Search hits are candidates only. An advert is published when its own page states this company's organisation number or one of its registered sub-units.
-7. **Diff against the previous snapshot**, set section states, and write the summary.
+6. **Look up the customer rating** on the company's trade-directory page, accepted only when the page's structured data states this organisation number.
+7. **Search NAV's job board** by legal name. Search hits are candidates only. An advert is published when its own page states this company's organisation number or one of its registered sub-units.
+8. **Diff against the previous snapshot**, set section states, and write the summary.
 
 ## Publication rules
 

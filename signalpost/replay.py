@@ -10,7 +10,7 @@ from typing import Any
 from .http import SnapshotFetcher
 from .pipeline import research_company
 
-REPLAY_OPTIONS = {"website": False, "nav_jobs": False, "registry_updates": False, "account_history": False}
+REPLAY_OPTIONS = {"website": False, "nav_jobs": False, "registry_updates": False, "account_history": False, "reviews": False}
 
 
 def run_replay(manifest_path: str, output_path: str) -> int:

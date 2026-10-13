@@ -53,8 +53,13 @@ NOT_A_PROFILE = {"sharer", "sharer.php", "share", "share.php", "sharearticle", "
 SKIP_EXT = re.compile(r"\.(pdf|jpe?g|png|gif|svg|webp|zip|docx?|xlsx?|pptx?|mp4|mp3|ics|css|js)(\?|$)", re.I)
 CONTACT_RE = re.compile(r"kontakt|contact|om-oss|omoss|om_oss|om-|about|hvem-er-vi|selskapet|/om/?$|personvern|privacy", re.I)
 CAREERS_RE = re.compile(r"karriere|career|jobb|/jobs|ledige|stilling|vacanc|join-us|work-with-us|bli-en-av-oss|rekrutter", re.I)
+ABOUT_RE = re.compile(r"om-oss|omoss|om_oss|about|hvem-er-vi|selskapet|/om/?$|/om-", re.I)
 NEWS_RE = re.compile(r"nyhet|aktuelt|/news|presse|/press|blogg|/blog|artikler|articles|siste-nytt|nytt", re.I)
 GENERIC_MAILBOX = re.compile(r"^(post|info|kontakt|contact|firmapost|hei|hello|mail|salg|sales|kundeservice|support|booking|ordre|admin|office|kontor|resepsjon|epost)$", re.I)
+JOB_WORDS = re.compile(r"soker|stilling|vikar|laerling|ingenior|tomrer|selger|konsulent|utvikler|radgiver|medarbeider|montor|elektriker|"
+                       r"sjafor|leder|tekniker|mekaniker|operator|sykepleier|kokk|renholder|controller|engineer|developer|manager|"
+                       r"assistent|fagarbeider|rorlegger|snekker|arkitekt|designer|analytiker|prosjekt|servitor|butikk|koordinator|okonom|"
+                       r"regnskap|advokat|laerer|pedagog|trainee|sommerjobb|deltid|heltid", re.I)
 JOB_TITLE_HINT = re.compile(r"/(jobs?|stilling(er)?|position|vacanc|ledig)[^/]*/[^/]*[\w-]{4,}", re.I)
 
 
@@ -124,15 +129,38 @@ def candidates_for(entity: dict[str, Any], wikidata_site: str | None, fetcher: F
         # An unrelated mail domain is an accountant, employer or ISP, not the company's own site: it is not even a candidate.
         if domain and related and domain not in FREEMAIL and registered_domain(domain) not in FREEMAIL:
             push(normalise_site(domain), "registry_email_domain", f"domain of the email address reported to the registry ({email})")
-    if not found and allow_guess:
-        core = full_core(entity.get("navn"))
-        compact_name = "".join(core)
-        if 1 <= len(core) <= 4 and 5 <= len(compact_name) <= 30:
-            for label in dict.fromkeys([compact_name, "-".join(core)]):
-                host = f"{label}.no"
-                if fetcher.resolves(host):
-                    push(f"https://{host}/", "name_guess", "domain derived from the legal name; published only with on-site proof")
+    if allow_guess:
+        guessed = 0
+        for host in guess_hosts(entity.get("navn")):
+            if registered_domain(host) in seen:
+                continue
+            if fetcher.resolves(host):
+                push(f"https://{host}/", "name_guess", "domain derived from the legal name; published only with on-site proof")
+                guessed += 1
+                if guessed >= 2:
+                    break
     return found
+
+
+def guess_hosts(name: Any, limit: int = 8) -> list[str]:
+    """Plausible domains for a legal name. They are only DNS-checked candidates; the identity gate decides everything."""
+    raw = str(name or "").lower()
+    spellings = []
+    for mapping in ({"ø": "o", "å": "a", "æ": "ae"}, {"ø": "oe", "å": "aa", "æ": "ae"}):
+        text = raw.translate(str.maketrans(mapping))
+        tokens = [token for token in all_tokens(text) if token not in HARD_GENERIC and len(token) > 1]
+        if tokens and tokens not in spellings:
+            spellings.append(tokens)
+    labels: list[str] = []
+    for tokens in spellings:
+        if not 1 <= len(tokens) <= 4:
+            continue
+        for label in ("".join(tokens), "-".join(tokens)):
+            if 5 <= len(label.replace("-", "")) <= 30 and label not in labels:
+                labels.append(label)
+    # .no only: measured on 1,000 companies, .com and shortened-name guesses found namesakes, never the company.
+    hosts = [f"{label}.no" for label in labels]
+    return hosts[:limit]
 
 
 # -- crawl ----------------------------------------------------------------------------------------
@@ -453,9 +481,24 @@ def publish_site(dossier: Dossier, entity: dict[str, Any], crawl: Crawl, assessm
         dossier.add_claim("website.title", field="website_title", family="official_website", value=page.title[:200],
                           evidence_ids=[ev(home, f"<title>{page.title[:200]}</title>", "html_title")], confidence=assessment["score"], label="Website title")
     description = page.meta.get("description") or page.meta.get("og:description")
+    description_method, description_response = "html_meta", home
+    if not description or len(description) < 25:
+        # Fallback: a self-describing sentence from the company's own "about" page. Homepages are skipped on purpose:
+        # their first paragraph is often a product, an offer or a banner, and it changes from day to day.
+        name_token = next((token for token in full_core(entity.get("navn")) if token not in SOFT_GENERIC and len(token) >= 4), None)
+        for role, (resp, sub) in crawl.pages.items():
+            if not role.startswith("contact") or not ABOUT_RE.search(urllib.parse.urlsplit(resp.final_url).path):
+                continue
+            paragraph = next((line for line in sub.text.split("\n") if 80 <= len(line) <= 600 and line.count(" ") >= 10
+                              and not re.search(r"cookie|informasjonskapsl|personvern|javascript|%|kr\b|,-", line, re.I)
+                              and (re.search(r"\b(vi|we|vår|vårt|våre|our)\b", line, re.I) or (name_token and name_token in fold(line)))), None)
+            if paragraph:
+                description, description_method, description_response = paragraph, "about_page_self_description", resp
+                break
     if description and len(description) >= 25:
         dossier.add_claim("website.description", field="company_description", family="official_website", value=description[:500],
-                          evidence_ids=[ev(home, f'meta description: {description[:240]}', "html_meta")], confidence=assessment["score"],
+                          evidence_ids=[ev(description_response, f'description: {description[:240]}', description_method)],
+                          confidence=assessment["score"] if description_method == "html_meta" else min(assessment["score"], 0.85),
                           label="Company's own description", explanation="Company-reported promotional text from its own site; not an independent assessment.")
     brand = page.meta.get("og:site_name")
     if not brand:
@@ -561,6 +604,27 @@ def publish_site(dossier: Dossier, entity: dict[str, Any], crawl: Crawl, assessm
                               value={"title": link.text, "url": url, "source": f"company careers page linking to {registered_domain(host)}"},
                               evidence_ids=[ev(resp, f"job link: {link.text} -> {url}", "html_ats_link")], label="Open position")
             job_claims += 1
+    if careers and job_claims < 15:
+        resp, sub = careers
+        base_path = urllib.parse.urlsplit(resp.final_url).path.rstrip("/")
+        for link in sub.links:
+            url = urllib.parse.urldefrag(urllib.parse.urljoin(resp.final_url, link.href))[0]
+            path = urllib.parse.urlsplit(url).path.rstrip("/")
+            if registered_domain(host_of(url)) != crawl.site_domain or not path.startswith(base_path + "/") or SKIP_EXT.search(url):
+                continue
+            title = link.text.strip()
+            if not (8 <= len(title) <= 120) or not JOB_WORDS.search(fold(title)):
+                continue
+            key = short_hash(url)
+            if key in seen_jobs or job_claims >= 15:
+                continue
+            seen_jobs.add(key)
+            dossier.add_claim(f"hiring.job.{key}", field="job_posting", family="hiring", confidence=min(assessment["score"], 0.8),
+                              value={"title": title, "url": url, "source": "company careers page (vacancy link)"},
+                              evidence_ids=[ev(resp, f"vacancy link under the careers page: {title} -> {url}", "html_careers_sublink")],
+                              label="Open position",
+                              explanation="Link below the company's own careers page whose text names a role. Listed by the company; closing date not stated.")
+            job_claims += 1
     if not job_claims:
         checked = ev(careers[0] if careers else home, "no structured job posting on the checked page", "json_ld_jobposting")
         dossier.unavailable("hiring.site_jobs", field="job_posting", family="hiring", availability="not_available", evidence_ids=[checked],
@@ -599,7 +663,14 @@ def publish_site(dossier: Dossier, entity: dict[str, Any], crawl: Crawl, assessm
     if not published_news:
         dossier.unavailable("activity.news", field="company_news_item", family="public_activity", availability="not_available", evidence_ids=[proof],
                             label="Company news", explanation="The verified site was checked and exposes no dated news or blog item.")
-    return {"final_url": crawl.origin_url, "title": page.title, "description": description, "social_links": profiles,
+    pages = [{"url": resp.final_url, "role": role, "title": sub.title[:300], "content_sha256": resp.content_sha256}
+             for role, (resp, sub) in [("home", (home, page)), *crawl.pages.items()]]
+    organisations = [{key: node.get(key) for key in ("@type", "name", "legalName", "url", "telephone", "email", "sameAs") if node.get(key)}
+                     for node in page.ld_nodes() if ld_types(node) & {"Organization", "Corporation", "LocalBusiness"}][:5]
+    return {"requested_url": crawl.candidate.url, "final_url": crawl.origin_url, "registered_domain": crawl.site_domain, "title": page.title,
+            "description": description, "main_text_excerpt": page.text[:1500], "social_links": [{"platform": item["platform"], "url": item["url"]} for item in profiles],
+            "structured_organisations": organisations, "pages": pages, "content_sha256": home.content_sha256,
+            "extraction_state": "static_html" if len(page.text) >= 200 else "thin_or_javascript_shell",
             "identity_assessment": assessment, "pages_fetched": 1 + len(crawl.pages), "job_postings": job_claims, "news_items": published_news}
 
 
@@ -626,7 +697,7 @@ def collect_website(dossier: Dossier, fetcher: Fetcher, entity: dict[str, Any], 
         return None
     outcome: dict[str, Any] | None = None
     last_state, last_note, transient = "not_available", "", False
-    for candidate in candidates[:2]:
+    for candidate in candidates[:3]:
         crawl = crawl_site(candidate, fetcher)
         if crawl.blocked:
             last_state, last_note, transient = "blocked", f"{candidate.url}: {crawl.blocked}", True

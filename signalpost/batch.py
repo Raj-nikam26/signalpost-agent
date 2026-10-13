@@ -202,7 +202,7 @@ def run_batch(args: Any) -> dict[str, Any]:
     history_mode = args.history
     account_history = history_mode == "on" or (history_mode == "auto" and count * 2.2 <= time_budget * 0.25)
     options = {"website": not args.no_website, "nav_jobs": not args.no_jobs, "guess_domains": not args.no_guess,
-               "registry_updates": not args.no_updates, "account_history": account_history}
+               "registry_updates": not args.no_updates, "account_history": account_history, "reviews": not getattr(args, "no_reviews", False)}
     valid = [org for org in orgs if valid_org_number(org) and org not in resumed]
     wikidata = wikidata_lookup(fetcher, valid) if valid and not args.no_wikidata else {}
 

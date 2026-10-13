@@ -101,6 +101,7 @@ function renderValue(c){ const v=c.value, u=c.unit;
   if(typeof v==="number") return (u && /^[A-Z]{3}$/.test(u)) ? `${esc(money(v,u))} <span class="muted small">(${fmtNum(v)})</span>` : `${fmtNum(v)}${u?" "+esc(u):""}`;
   if(typeof v==="string") return /^https?:\/\//i.test(v) ? link(v) : esc(v);
   if(Array.isArray(v)) return v.map(x=>typeof x==="object"?esc(Object.values(x).filter(Boolean).join(" · ")):esc(x)).join("<br>");
+  if(v.rating!=null && v.review_count!=null) return `<b>${esc(v.rating)} / ${esc(v.scale)}</b> from ${fmtNum(v.review_count)} review${v.review_count===1?"":"s"} <span class="muted small">shown by ${link(v.listing_url,v.shown_by)}</span>`;
   if(v.url && v.title) return `${link(v.url,v.title)}${v.published?` <span class="muted small">${esc(v.published)}</span>`:""}${v.location?` <span class="muted small">${esc(v.location)}</span>`:""}${v.expires?` <span class="muted small">apply by ${esc(v.expires)}</span>`:""}`;
   if(v.platform && v.url) return `${link(v.url,v.url.replace(/^https?:\/\/(www\.)?/,""))}`;
   if(v.name && v.role) return `<b>${esc(v.name)}</b> <span class="muted">· ${esc(v.role_english||v.role)}${v.elected_by?" · "+esc(v.elected_by):""}</span>`;
@@ -140,7 +141,7 @@ async function viewCompany(org){ const app=$("#app"); app.innerHTML=`<div class=
   const sentences=(s.sentences||[]).map(x=>`<p>${esc(x.text)}${x.derived?' <span class="pill info">derived</span>':''}${cite(x.evidence_ids)}</p>`).join("");
   const evMap=Object.fromEntries(d.evidence.map(e=>[e.id,e]));
   const refs=Object.entries(evIndex).sort((a,b)=>a[1]-b[1]).map(([i,k])=>{const e=evMap[i]||{};return `<div class="small" id="ref-${esc(i)}">[${k}] ${link(e.source_url,e.source_name||e.source_url)} · retrieved ${esc(e.retrieved_at)} · <code>${esc((e.claim_span||"").slice(0,140))}</code></div>`;}).join("");
-  const tabs=[["overview","Overview"],["financials","Financials"],["people","Leadership"],["places","Workplaces & group"],["online","Website & profiles"],["hiring","Hiring & activity"],["changes",`Changes (${(d.changes||[]).length})`],["unknowns","Unknowns"],["evidence",`All evidence (${d.evidence.length})`]];
+  const tabs=[["overview","Overview"],["financials","Financials"],["people","Leadership"],["places","Workplaces & group"],["online","Website & profiles"],["hiring","Hiring, reviews & activity"],["changes",`Changes (${(d.changes||[]).length})`],["unknowns","Unknowns"],["evidence",`All evidence (${d.evidence.length})`]];
   const t=state.tab; let body="";
   if(t==="overview") body=`<div class="card summary"><h2>Summary</h2>${sentences||'<p class="muted">No supported statement could be made.</p>'}
      ${(s.signals||[]).length?`<p>${s.signals.map(g=>pill(g.severity,g.text)).join(" ")}</p>`:""}<p class="muted small">${esc(s.method||"")}</p>${refs?`<details><summary class="small">Sources cited in this summary (${n})</summary>${refs}</details>`:""}</div>
@@ -150,7 +151,7 @@ async function viewCompany(org){ const app=$("#app"); app.innerHTML=`<div class=
   if(t==="people") body=section(d,"Leadership and registered roles",fam("leadership"),"leadership");
   if(t==="places") body=section(d,"Registered workplaces",fam("workplaces"),"workplaces")+section(d,"Group structure",fam("group_structure"),"group_structure");
   if(t==="online") body=section(d,"Verified official website",fam("official_website"),"official_website")+section(d,"Company-owned profiles",fam("company_profiles"),"company_profiles")+section(d,"Contact details",fam("contact"),"contact");
-  if(t==="hiring") body=section(d,"Hiring",fam("hiring"),"hiring")+section(d,"Dated public activity",fam("public_activity"),"public_activity");
+  if(t==="hiring") body=section(d,"Hiring",fam("hiring"),"hiring")+section(d,"Customer reviews",fam("reviews"),"reviews")+section(d,"Dated public activity",fam("public_activity"),"public_activity");
   if(t==="changes") body=`<div class="card"><h2>Changes since the previous run</h2><p class="muted">${esc((s.what_changed||{}).note||"")}</p>
      ${(d.changes||[]).map(c=>`<div class="fact"><div class="label">${pill(c.materiality)} ${esc(c.change_type.replace(/_/g," "))}<div class="small">detected ${day(c.detected_at)}</div></div><div class="value">${esc(c.summary)}<div class="muted small">before: <code>${esc(JSON.stringify(c.old_value)).slice(0,300)}</code><br>after: <code>${esc(JSON.stringify(c.new_value)).slice(0,300)}</code></div></div><div class="src">${link(c.source_url,"source")}<br><span class="muted">earlier evidence kept: ${(c.old_evidence||[]).length}</span></div></div>`).join("")||'<div class="muted">No changes recorded in this run.</div>'}
      ${(d.change_history||[]).length?`<h2 style="margin-top:16px">Earlier changes</h2>${d.change_history.slice().reverse().map(c=>`<div class="small">${day(c.detected_at)} · ${pill(c.materiality)} ${esc(c.summary)}</div>`).join("")}`:""}</div>`;

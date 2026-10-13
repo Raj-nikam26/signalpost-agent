@@ -2,9 +2,9 @@
   "agent": "signalpost-agent/1.0.0",
   "schema_version": "signalpost-envelope/1.0",
   "run_id": "smoke-100-run1",
-  "started_at": "2026-10-12T19:18:11Z",
-  "completed_at": "2026-10-12T19:22:14Z",
-  "runtime_seconds": 244.0,
+  "started_at": "2026-10-13T03:22:38Z",
+  "completed_at": "2026-10-13T03:26:43Z",
+  "runtime_seconds": 246.1,
   "expected_count": 100,
   "input": {
     "source": "data/smoke-100.jsonl",
@@ -54,6 +54,10 @@
       "not_available": 6,
       "available": 2
     },
+    "reviews": {
+      "not_available": 97,
+      "available": 3
+    },
     "public_activity": {
       "available": 100
     }
@@ -69,6 +73,7 @@
       "legal_identity": 100,
       "official_website": 10,
       "public_activity": 100,
+      "reviews": 3,
       "workplaces": 61
     },
     "published_claims_by_family": {
@@ -79,8 +84,9 @@
       "hiring": 2,
       "leadership": 389,
       "legal_identity": 1563,
-      "official_website": 21,
+      "official_website": 24,
       "public_activity": 100,
+      "reviews": 3,
       "workplaces": 125
     },
     "published_claims_by_field": {
@@ -90,7 +96,7 @@
       "business_address": 99,
       "careers_page": 2,
       "cash": 270,
-      "company_description": 3,
+      "company_description": 6,
       "company_status": 100,
       "contact_email": 2,
       "contact_phone": 5,
@@ -132,6 +138,7 @@
       "related_group_website": 2,
       "retained_earnings": 280,
       "revenue": 205,
+      "review_summary": 3,
       "role_holder": 389,
       "sales_revenue": 141,
       "share_capital": 94,
@@ -147,9 +154,9 @@
       "vat_registered": 100,
       "website_title": 8
     },
-    "published_claims_total": 8031,
-    "claims_per_company_mean": 80.3,
-    "evidence_records_total": 8166
+    "published_claims_total": 8037,
+    "claims_per_company_mean": 80.4,
+    "evidence_records_total": 8269
   },
   "website_identity_gate": {
     "not_available": 75,
@@ -167,22 +174,23 @@
     "previous_source": null
   },
   "operations": {
-    "requests": 747,
+    "requests": 852,
     "request_budget": 2000,
-    "requests_per_company_mean": 7.47,
+    "requests_per_company_mean": 8.52,
     "requests_by_source_class": {
-      "company_owned": 138,
+      "company_owned": 142,
       "official_annual_accounts": 100,
       "official_registry": 504,
       "open_knowledge_base": 2,
+      "public_directory": 101,
       "public_job_board": 3
     },
-    "dns_lookups": 157,
-    "bytes": 7069461,
-    "p50_ms": 942,
-    "p95_ms": 1700,
-    "company_runtime_p50_ms": 33274,
-    "company_runtime_p95_ms": 42992,
+    "dns_lookups": 185,
+    "bytes": 11074030,
+    "p50_ms": 882,
+    "p95_ms": 2410,
+    "company_runtime_p50_ms": 32463,
+    "company_runtime_p95_ms": 42919,
     "time_budget_minutes": 40.0,
     "within_time_budget": true,
     "within_request_budget": true,
@@ -195,7 +203,8 @@
     "nav_jobs": true,
     "guess_domains": true,
     "registry_updates": true,
-    "account_history": true
+    "account_history": true,
+    "reviews": true
   },
   "registry": {
     "identity_anchor": "live Enhetsregisteret API, exact organisation-number lookup"

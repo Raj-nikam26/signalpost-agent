@@ -12,7 +12,7 @@ One JSON object per input organisation number, one per line, in input order. The
 | `state` | Same outcome in the reference runner's vocabulary (`complete`, `not_found`, `source_error`, …) |
 | `run` | `run_id`, `started_at`, `completed_at`, `terminal_status`, `agent` |
 | `identity` | Quick-read block: legal name, brand, form, status, municipality, industry, employees, verified website |
-| `sections` | State, fact count and explanation for each of the ten sections |
+| `sections` | State, fact count and explanation for each of the eleven sections |
 | `summary` | Headline, cited sentences, signals, what changed, unknowns |
 | `claims` | The facts |
 | `evidence` | The proof behind the facts |
@@ -22,6 +22,7 @@ One JSON object per input organisation number, one per line, in input order. The
 | `modules` | Per-source state, retry count, final timestamp, note |
 | `errors` | `module`, `code`, `message`, `source_url`, `at` |
 | `operations` | `requests`, `runtime_ms`, `third_party_cost_usd` |
+| `external_footprint` | External facts again as observations in the reference kit's shape: `platform`, `signal_type`, `source_url`, `content_sha256`, `exact_entity`, `identity_proof`, `acquisition_mode`, `rights_status` |
 | `profile` | The same data in the reference runner's `profile.evidence.<module>` shape |
 
 ## States
@@ -57,7 +58,7 @@ One JSON object per input organisation number, one per line, in input order. The
 ```
 
 - `key` is stable across runs and identifies the fact, for example `leadership.DAGL.kari-nordmann`, `workplace.973861883`, `profile.linkedin`, `hiring.job.nav.<uuid>`.
-- `family` is one of `legal_identity`, `annual_accounts`, `leadership`, `workplaces`, `group_structure`, `official_website`, `company_profiles`, `contact`, `hiring`, `public_activity`.
+- `family` is one of `legal_identity`, `annual_accounts`, `leadership`, `workplaces`, `group_structure`, `official_website`, `company_profiles`, `contact`, `hiring`, `reviews`, `public_activity`.
 - When `availability` is not `available`, `value` is `null`, `confidence` is absent and `explanation` says why.
 - `carried_forward: true` marks a value kept from an earlier run, with `carried_reason`.
 - `explanation` states how the fact was established or what it does not mean.
@@ -80,7 +81,7 @@ One JSON object per input organisation number, one per line, in input order. The
 }
 ```
 
-`source_class` is one of `official_registry`, `official_annual_accounts`, `company_owned`, `public_job_board`, `open_knowledge_base`. `redirect_chain` and `requested_url` are present when the final URL differs from the requested one. Evidence and claim ids are hashes of their content, so a rerun produces the same ids.
+`source_class` is one of `official_registry`, `official_annual_accounts`, `company_owned`, `public_job_board`, `public_directory`, `open_knowledge_base`. `redirect_chain` and `requested_url` are present when the final URL differs from the requested one. Evidence and claim ids are hashes of their content, so a rerun produces the same ids.
 
 ## Change
 

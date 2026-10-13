@@ -9,9 +9,9 @@ The organisation number is the only key. A domain, brand or handle is a candidat
 | `registry` | `hjemmeside` the company reported to Enhetsregisteret | Reported by the company itself |
 | `wikidata` | Official-website property of the Wikidata item whose P2333 equals the organisation number | Keyed by number, community-edited |
 | `registry_email_domain` | Domain of the email the company reported, only if the domain relates to the legal name and is not a mail provider | Weak |
-| `name_guess` | `<legalname>.no`, only if it resolves in DNS and no other candidate exists | None on its own |
+| `name_guess` | `<legalname>.no` in a few spellings, only if it resolves in DNS | None on its own |
 
-At most two candidates are crawled per company.
+At most three candidates are crawled per company, and at most two of them are name guesses.
 
 ## Decision table
 
@@ -48,6 +48,7 @@ The website the company reported to the register is always published separately 
 
 - **Social profiles**: the link must be on the verified homepage, must not be a share or login link, and its handle must match the legal name, the brand or the domain, or be declared in the site's `sameAs` structured data. Handles of site builders (Wix, Squarespace and similar) are never published.
 - **Job adverts on NAV**: the advert's own page must state an organisation number, and every number it states must be this company or one of its registered sub-units.
+- **Customer rating**: the directory page's structured data must carry an `identifier` equal to this organisation number; otherwise the result is `ambiguous`.
 - **Annual accounts**: a record whose `virksomhet.organisasjonsnummer` differs from the requested number is dropped.
 - **Wikidata**: if two items carry the same organisation number the match is `ambiguous` and nothing is published.
 

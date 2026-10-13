@@ -10,9 +10,10 @@ import time
 import urllib.parse
 from typing import Any
 
-from ..claims import OPEN_KNOWLEDGE, PUBLIC_JOB_BOARD, Dossier, span_from_json
+from ..claims import OPEN_KNOWLEDGE, PUBLIC_DIRECTORY, PUBLIC_JOB_BOARD, Dossier, span_from_json
+from ..htmlx import parse_html
 from ..http import Fetcher
-from ..util import all_tokens, fold, parse_date
+from ..util import all_tokens, fold, parse_date, slug
 from .website import full_core
 
 NAV_SEARCH = "https://arbeidsplassen.nav.no/stillinger/api/search?q={query}&size=25"
@@ -138,6 +139,62 @@ def collect_nav_jobs(dossier: Dossier, fetcher: Fetcher, entity: dict[str, Any],
                                         "This is not proof that the company is not hiring.")
     dossier.module("nav_jobs", "available" if verified else "not_available", response=response)
     return verified
+
+
+# -- Fagfolkguiden (trade directory keyed by organisation number) ---------------------------------
+FAGFOLK_PAGE = "https://www.fagfolkguiden.no/bedrift/{slug}-{org}"
+
+
+def collect_reviews(dossier: Dossier, fetcher: Fetcher, entity: dict[str, Any]) -> bool:
+    """Customer rating shown on the company's own directory page. The page URL and its structured data carry the organisation number."""
+    org = dossier.organisation_number
+    family = "reviews"
+    label = "Customer rating"
+    url = FAGFOLK_PAGE.format(slug=slug(entity.get("navn")), org=org)
+    response = fetcher.get(url, source_class=PUBLIC_DIRECTORY, robots=True, timeout=12.0, max_bytes=600_000)
+    if response.blocked or response.status in {401, 403, 429}:
+        note = response.blocked or response.error
+        dossier.module("reviews", "blocked", note=note, response=response, transient=True)
+        dossier.unavailable("reviews.rating", field="review_summary", family=family, availability="blocked", label=label,
+                            explanation=f"The trade directory could not be read in this run ({note}).")
+        return False
+    if response.status != 200:
+        state = "not_available" if response.status in {404, 410} else "failed"
+        ev = dossier.add_evidence(response, source_class=PUBLIC_DIRECTORY, source_name="Fagfolkguiden.no",
+                                  claim_span=f"HTTP {response.status}: no directory page for this organisation number", extraction_method="http_status")
+        dossier.module("reviews", state, note=response.error, response=response, transient=state == "failed")
+        dossier.unavailable("reviews.rating", field="review_summary", family=family, availability=state, evidence_ids=[ev], label=label,
+                            explanation="The trade directory Fagfolkguiden has no page for this organisation number, so no customer rating was found. "
+                                        "The directory covers trades and craft businesses only.")
+        return False
+    page = parse_html(response.text)
+    node = next((item for item in page.ld_nodes() if isinstance(item.get("identifier"), dict)
+                 and str(item["identifier"].get("value")) == org), None)
+    rating = (node or {}).get("aggregateRating") if node else None
+    try:
+        value = float(rating.get("ratingValue")) if isinstance(rating, dict) else None
+        count = int(rating.get("ratingCount") or rating.get("reviewCount") or 0) if isinstance(rating, dict) else 0
+        scale = float(rating.get("bestRating") or 5) if isinstance(rating, dict) else 5.0
+    except (TypeError, ValueError):
+        value, count, scale = None, 0, 5.0
+    if node is None or value is None or count <= 0 or not 0 < value <= scale:
+        reason = ("the page does not state this organisation number in its structured data" if node is None
+                  else "the page carries no customer rating")
+        ev = dossier.add_evidence(response, source_class=PUBLIC_DIRECTORY, source_name="Fagfolkguiden.no",
+                                  claim_span=f"directory page checked: {reason}", extraction_method="json_ld_localbusiness")
+        dossier.module("reviews", "ambiguous" if node is None else "not_available", note=reason, response=response)
+        dossier.unavailable("reviews.rating", field="review_summary", family=family, availability="ambiguous" if node is None else "not_available",
+                            evidence_ids=[ev], label=label, explanation=f"The company's directory page was checked; {reason}.")
+        return False
+    ev = dossier.add_evidence(response, source_class=PUBLIC_DIRECTORY, source_name="Fagfolkguiden.no",
+                              claim_span=f'identifier Organisasjonsnummer {org}; aggregateRating ratingValue {rating.get("ratingValue")} ratingCount {count} bestRating {rating.get("bestRating")}',
+                              extraction_method="json_ld_localbusiness_identifier_match")
+    dossier.add_claim("reviews.rating", field="review_summary", family=family, evidence_ids=[ev], confidence=0.85, label=label,
+                      value={"rating": value, "scale": scale, "review_count": count, "shown_by": "Fagfolkguiden.no", "listing_url": response.final_url},
+                      explanation="Aggregate customer rating as displayed on the company's Fagfolkguiden page, whose structured data states this "
+                                  "organisation number. It is a third-party display of customer reviews, not the agent's own assessment; no review text is collected.")
+    dossier.module("reviews", "available", response=response)
+    return True
 
 
 # -- Wikidata -------------------------------------------------------------------------------------
