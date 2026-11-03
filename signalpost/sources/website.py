@@ -50,9 +50,10 @@ TEMPLATE_VENDORS = {"wix", "wixcom", "squarespace", "wordpress", "wordpressdotco
 NOT_A_PROFILE = {"sharer", "sharer.php", "share", "share.php", "sharearticle", "sharing", "pin", "intent", "dialog", "hashtag", "search", "login",
                  "signup", "policies", "legal", "help", "watch", "embed", "plugins", "tr", "privacy", "terms", "about", "business", "ads", "events",
                  "groups", "playlist", "results", "explore", "home", "feed", "maps", "l.php", "tos", "settings", "i", "share-offsite"}
+SHOP_PATH = re.compile(r"/(produkt|produkter|product|products|shop|butikk|nettbutikk|kategori|category|vare|varer|item|cart|handlekurv)(/|$)", re.I)
 SKIP_EXT = re.compile(r"\.(pdf|jpe?g|png|gif|svg|webp|zip|docx?|xlsx?|pptx?|mp4|mp3|ics|css|js)(\?|$)", re.I)
 CONTACT_RE = re.compile(r"kontakt|contact|om-oss|omoss|om_oss|om-|about|hvem-er-vi|selskapet|/om/?$|personvern|privacy", re.I)
-CAREERS_RE = re.compile(r"karriere|career|jobb|/jobs|ledige|stilling|vacanc|join-us|work-with-us|bli-en-av-oss|rekrutter", re.I)
+CAREERS_RE = re.compile(r"karriere|career|(?<![a-z])jobb|/jobs|ledige|(?<![a-z])stilling|vacanc|join-us|work-with-us|bli-en-av-oss|rekrutter", re.I)
 ABOUT_RE = re.compile(r"om-oss|omoss|om_oss|about|hvem-er-vi|selskapet|/om/?$|/om-", re.I)
 NEWS_RE = re.compile(r"nyhet|aktuelt|/news|presse|/press|blogg|/blog|artikler|articles|siste-nytt|nytt", re.I)
 GENERIC_MAILBOX = re.compile(r"^(post|info|kontakt|contact|firmapost|hei|hello|mail|salg|sales|kundeservice|support|booking|ordre|admin|office|kontor|resepsjon|epost)$", re.I)
@@ -183,7 +184,7 @@ def _pick(links: list[tuple[str, str]], pattern: re.Pattern[str], exclude: set[s
     scored = []
     for url, text in links:
         path = urllib.parse.urlsplit(url).path
-        if url in exclude or path in {"", "/"}:
+        if url in exclude or path in {"", "/"} or SHOP_PATH.search(path):
             continue
         if pattern.search(path) or pattern.search(fold(text)):
             scored.append((path.count("/") + (0 if pattern.search(path) else 1), len(path), url))
@@ -295,7 +296,7 @@ def assess_identity(entity: dict[str, Any], crawl: Crawl, related_orgs: set[str]
     name_in_identity = bool(core) and any(set(core).issubset(tokens) for tokens in part_tokens)
     phrase = _phrase_in(folded, core)
     label_equals_name = len(host_label) >= 5 and host_label == "".join(core)
-    result.update({"legal_name_tokens": core, "organisation_numbers_on_site": sorted(org_hits)[:8]})
+    result.update({"legal_name_tokens": core, "organisation_numbers_on_site": sorted(org_hits)[:8], "other_organisation_numbers": sorted(others)[:8]})
 
     if org in org_hits:
         result["proof_span"], result["proof_url"] = org_hits[org]
@@ -434,6 +435,21 @@ def parse_feed(xml_text: str, limit: int = 6) -> list[dict[str, str]]:
     return items
 
 
+ADDRESS_TITLE = re.compile(r"(gate|gata|vei|veien|vegen|veg|plass|alle|torg|brygge|road|street)\s*\d", re.I)
+NOT_AN_ARTICLE = re.compile(r"vedlegg|attachment|/produkt|/product|/shop/|/butikk/|/kategori|/category|/tag/|/prosjekt|/project|/referanse|"
+                            r"/case|/kurs/|/course|/tilbud|/kampanje|/salg|/sale|/vare/|/item/", re.I)
+
+
+def looks_like_article(title: str, url: str) -> bool:
+    """A news item needs a sentence-like headline. Street addresses, product codes and project or shop pages are not news."""
+    words = title.split()
+    if len(words) < 3 or ADDRESS_TITLE.search(fold(title)) or NOT_AN_ARTICLE.search(urllib.parse.urlsplit(url).path):
+        return False
+    if re.match(r"^[A-ZÆØÅ]{1,4}\s?\d{2,}", title):  # course or product codes such as "NE114 ..."
+        return False
+    return True
+
+
 def _ld_articles(page: Page) -> list[dict[str, str]]:
     items = []
     for node in page.ld_nodes():
@@ -459,6 +475,26 @@ def _ld_jobs(page: Page) -> list[dict[str, Any]]:
                 "employment_type": node.get("employmentType") if isinstance(node.get("employmentType"), str) else None,
             })
     return jobs
+
+
+NO_OPENINGS = re.compile(r"ingen ledige (stillinger|jobber)|ingen (aktive |apne |utlyste )?stillinger|for (tiden|oyeblikket) ingen|"
+                         r"har ikke (noen )?ledige|ingen utlysninger|no (current |open )?(positions|openings|vacancies)|"
+                         r"there are (currently )?no (open )?(positions|vacancies|openings)|not hiring", re.I)
+_LEGAL_NAME_RE = re.compile(r"\b((?:[A-ZÆØÅ0-9][\wÆØÅæøå&'.-]*\s){1,4})(AS|ASA)\b")
+
+
+def other_entities_on(text: str, entity: dict[str, Any], own_orgs: set[str]) -> list[str]:
+    """Signs that a page speaks for several legal entities: other organisation numbers, or other "<Name> AS" companies."""
+    found = [f"org. no. {org}" for org in find_org_numbers(text) if org not in own_orgs]
+    own = " ".join(full_core(entity.get("navn")))
+    names = []
+    for match in _LEGAL_NAME_RE.finditer(text):
+        name = " ".join(match.group(1).split())
+        tokens = " ".join(token for token in all_tokens(name) if token not in HARD_GENERIC and not token.isdigit()
+                          and token not in {"copyright", "org", "nr", "levert", "av", "design", "utviklet", "laget", "drevet"})
+        if tokens and tokens != own and not own.startswith(tokens) and tokens not in names:
+            names.append(tokens)
+    return found + [f"company “{name.upper()} AS”" for name in names]
 
 
 def publish_site(dossier: Dossier, entity: dict[str, Any], crawl: Crawl, assessment: dict[str, Any]) -> dict[str, Any]:
@@ -495,6 +531,9 @@ def publish_site(dossier: Dossier, entity: dict[str, Any], crawl: Crawl, assessm
             if paragraph:
                 description, description_method, description_response = paragraph, "about_page_self_description", resp
                 break
+    if description and (re.search(r"gratis frakt|fri frakt|\bkr\.?\s?\d|\d+\s?%|,-|rabatt|tilbud|kampanje|bestill (na|nå)|handlekurv", description, re.I)
+                        or not re.search(r"\b(er|og|vi|som|for|med|til|av|på|pa|i|the|and|is|we|with|for|of)\b", description.lower())):
+        description = None  # a promotional banner or a keyword list does not say what the company does
     if description and len(description) >= 25:
         dossier.add_claim("website.description", field="company_description", family="official_website", value=description[:500],
                           evidence_ids=[ev(description_response, f'description: {description[:240]}', description_method)],
@@ -507,8 +546,15 @@ def publish_site(dossier: Dossier, entity: dict[str, Any], crawl: Crawl, assessm
                 brand = node["name"]
                 break
     legal = str(entity.get("navn") or "")
-    same_as_legal = [token for token in all_tokens(brand) if token not in HARD_GENERIC] == [token for token in all_tokens(legal) if token not in HARD_GENERIC]
-    if brand and 2 <= len(brand) <= 60 and not same_as_legal:
+    if brand:
+        brand = re.split(r"\s+[|–—-]\s+|,\s|:\s", brand.strip())[0].strip()
+    brand_tokens = [token for token in all_tokens(brand) if token not in HARD_GENERIC]
+    same_as_legal = brand_tokens == [token for token in all_tokens(legal) if token not in HARD_GENERIC]
+    domain_label = registered_domain(host_of(crawl.origin_url)).split(".")[0].replace("-", "")
+    legal_tokens = set(full_core(legal))
+    brand_related = bool(brand_tokens) and (bool(set(brand_tokens) & legal_tokens) or "".join(brand_tokens) in domain_label
+                                            or domain_label in "".join(brand_tokens))
+    if brand and 2 <= len(brand) <= 60 and not same_as_legal and brand_related and len(brand_tokens) <= 5:
         dossier.add_claim("website.public_brand", field="public_brand", family="legal_identity", value=" ".join(brand.split()),
                           evidence_ids=[ev(home, f"site name: {brand}", "og_site_name_or_json_ld")], confidence=min(assessment["score"], 0.9),
                           label="Public brand name", explanation="Name the company uses on its verified site; the legal name is unchanged.")
@@ -533,10 +579,19 @@ def publish_site(dossier: Dossier, entity: dict[str, Any], crawl: Crawl, assessm
                                       evidence_ids=[ev(resp, f"tel:{number}", "html_tel_link")], label="Contact phone (company site)")
                     phone_done = True
 
+    own_orgs = {str(entity.get("organisasjonsnummer"))} | {str(item) for item in assessment.get("related_organisation_numbers_allowed", [])}
+    group_signals = [f"org. no. {org}" for org in assessment.get("other_organisation_numbers", [])]
+    group_signals += [signal for signal in other_entities_on(page.text, entity, own_orgs) if signal not in group_signals and signal.startswith("company")][:4]
+    shared_site = any(signal.startswith("org.") for signal in group_signals) or sum(signal.startswith("company") for signal in group_signals) >= 3
+    if shared_site:
+        assessment = {**assessment, "shared_site": True, "shared_site_signals": group_signals[:5]}
+
     # company-owned social profiles
     aliases = ["".join(full_core(legal)), "".join(t for t in full_core(legal) if t not in SOFT_GENERIC), "".join(all_tokens(brand or "")),
                registered_domain(host_of(crawl.origin_url)).split(".")[0].replace("-", "")]
     aliases = [alias for alias in dict.fromkeys(aliases) if alias]
+    if shared_site:
+        aliases = [alias for alias in dict.fromkeys(["".join(full_core(legal))]) if alias]
     per_page = [(resp, social_links(sub, resp.final_url)) for resp, sub in [(home, page)] + [(r, p) for r, p in crawl.pages.values()]]
     counts: dict[str, int] = {}
     for _resp, links in per_page:
@@ -549,7 +604,7 @@ def publish_site(dossier: Dossier, entity: dict[str, Any], crawl: Crawl, assessm
         reasons = []
         if _handle_matches(link["handle"], aliases):
             reasons.append("handle matches the company or brand name")
-        if link["url"] in ld_same:
+        if link["url"] in ld_same and not shared_site:
             reasons.append("declared in the site's structured data (sameAs)")
         if not reasons:
             quarantined += 1
@@ -564,12 +619,25 @@ def publish_site(dossier: Dossier, entity: dict[str, Any], crawl: Crawl, assessm
         dossier.unavailable("profile.none", field="social_profile", family="company_profiles", availability="not_available", evidence_ids=[proof],
                             label="Company-owned social profiles",
                             explanation="The verified company site was checked and links to no social profile that could be tied to the company."
-                            + (f" {quarantined} unrelated-looking link(s) were withheld." if quarantined else ""))
+                            + (f" {quarantined} link(s) were withheld because they could belong to another company"
+                               + (" in the group that shares this site." if shared_site else ".") if quarantined else ""))
 
     # hiring
     job_claims = 0
     careers = crawl.pages.get("careers")
-    job_sources = [(home, page)] + ([careers] if careers else [])
+    hiring_note = None
+    if careers:
+        careers_text = careers[1].text
+        careers_others = other_entities_on(careers_text, entity, own_orgs)
+        if NO_OPENINGS.search(fold(careers_text)):
+            hiring_note = "The careers page states that there are no open positions."
+            careers = None
+        elif shared_site or len(careers_others) >= 2:
+            hiring_note = ("The careers page serves several companies (" + ", ".join((careers_others or group_signals)[:3])
+                           + "), so its vacancies cannot be attributed to this one.")
+            careers = None
+    job_sources = [] if shared_site else [(home, page)]
+    job_sources += [careers] if careers else []
     seen_jobs: set[str] = set()
     for resp, sub in job_sources:
         for job in _ld_jobs(sub):
@@ -587,7 +655,7 @@ def publish_site(dossier: Dossier, entity: dict[str, Any], crawl: Crawl, assessm
             job_claims += 1
     if careers:
         resp, sub = careers
-        dossier.add_claim("hiring.careers_page", field="careers_page", family="hiring", value=resp.final_url, confidence=assessment["score"],
+        dossier.add_claim("website.careers_page", field="careers_page", family="official_website", value=resp.final_url, confidence=assessment["score"],
                           evidence_ids=[ev(resp, f"careers page: {sub.title[:120] or resp.final_url}", "html_link_discovery")], label="Careers page")
         for link in sub.links:
             url = urllib.parse.urljoin(resp.final_url, link.href)
@@ -626,11 +694,12 @@ def publish_site(dossier: Dossier, entity: dict[str, Any], crawl: Crawl, assessm
                               explanation="Link below the company's own careers page whose text names a role. Listed by the company; closing date not stated.")
             job_claims += 1
     if not job_claims:
-        checked = ev(careers[0] if careers else home, "no structured job posting on the checked page", "json_ld_jobposting")
-        dossier.unavailable("hiring.site_jobs", field="job_posting", family="hiring", availability="not_available", evidence_ids=[checked],
-                            label="Open positions on the company site",
-                            explanation=("The careers page" if careers else "The homepage (no careers page was linked)")
-                            + " was checked and exposes no machine-readable job posting. This is not proof that the company is not hiring.")
+        checked_page = crawl.pages.get("careers") or (home, page)
+        checked = ev(checked_page[0], hiring_note or "no structured job posting on the checked page", "careers_page_check")
+        dossier.unavailable("hiring.site_jobs", field="job_posting", family="hiring", availability="not_available" if not shared_site else "ambiguous",
+                            evidence_ids=[checked], label="Open positions on the company site",
+                            explanation=hiring_note or (("The careers page" if careers else "The homepage (no careers page was linked)")
+                            + " was checked and exposes no machine-readable job posting. This is not proof that the company is not hiring."))
 
     # dated public activity from the company's own channels
     news_items: list[tuple[Response, dict[str, str], str]] = []
@@ -640,15 +709,20 @@ def publish_site(dossier: Dossier, entity: dict[str, Any], crawl: Crawl, assessm
     if "news" in crawl.pages:
         resp, sub = crawl.pages["news"]
         news_items += [(resp, item, "json_ld_article") for item in _ld_articles(sub)]
-        news_items += [(resp, {"title": item.title, "url": item.href, "published": parse_date(item.date) or ""}, "html_dated_item") for item in sub.items]
     news_items += [(home, item, "json_ld_article") for item in _ld_articles(page)]
-    news_items += [(home, {"title": item.title, "url": item.href, "published": parse_date(item.date) or ""}, "html_dated_item") for item in page.items]
+    if shared_site:
+        news_items = []  # a group site's news is about the group, not about this legal entity
     published_news = 0
     seen_news: set[str] = set()
     for resp, item, method in sorted(news_items, key=lambda entry: entry[1].get("published") or "", reverse=True):
         url = urllib.parse.urljoin(resp.final_url, item["url"])
         date = item.get("published") or ""
-        if not date or date > today or date < "2000-01-01" or url in seen_news or len(item["title"]) < 8:
+        oldest = f"{int(today[:4]) - 3}{today[4:]}"  # older than three years is history, not current activity
+        if not date or date > today or date < oldest or url in seen_news or len(item["title"]) < 8 or len(item["title"].split()) < 2:
+            continue
+        if urllib.parse.urlsplit(url).path.strip("/") == "" or fold(item["title"]) == fold(page.title):
+            continue  # the homepage itself is not a news item
+        if not looks_like_article(item["title"], url):
             continue
         if registered_domain(host_of(url)) != crawl.site_domain:
             continue
@@ -661,8 +735,10 @@ def publish_site(dossier: Dossier, entity: dict[str, Any], crawl: Crawl, assessm
         if published_news >= 6:
             break
     if not published_news:
-        dossier.unavailable("activity.news", field="company_news_item", family="public_activity", availability="not_available", evidence_ids=[proof],
-                            label="Company news", explanation="The verified site was checked and exposes no dated news or blog item.")
+        dossier.unavailable("activity.news", field="company_news_item", family="public_activity", availability="ambiguous" if shared_site else "not_available",
+                            evidence_ids=[proof], label="Company news",
+                            explanation=("The verified site is shared by several companies, so its news is not attributed to this one." if shared_site else
+                                         "The verified site was checked and has no news feed or article marked up with a date and headline."))
     pages = [{"url": resp.final_url, "role": role, "title": sub.title[:300], "content_sha256": resp.content_sha256}
              for role, (resp, sub) in [("home", (home, page)), *crawl.pages.items()]]
     organisations = [{key: node.get(key) for key in ("@type", "name", "legalName", "url", "telephone", "email", "sameAs") if node.get(key)}
@@ -671,7 +747,7 @@ def publish_site(dossier: Dossier, entity: dict[str, Any], crawl: Crawl, assessm
             "description": description, "main_text_excerpt": page.text[:1500], "social_links": [{"platform": item["platform"], "url": item["url"]} for item in profiles],
             "structured_organisations": organisations, "pages": pages, "content_sha256": home.content_sha256,
             "extraction_state": "static_html" if len(page.text) >= 200 else "thin_or_javascript_shell",
-            "identity_assessment": assessment, "pages_fetched": 1 + len(crawl.pages), "job_postings": job_claims, "news_items": published_news}
+            "identity_assessment": assessment, "shared_site": shared_site, "pages_fetched": 1 + len(crawl.pages), "job_postings": job_claims, "news_items": published_news}
 
 
 def collect_website(dossier: Dossier, fetcher: Fetcher, entity: dict[str, Any], *, wikidata_site: str | None = None,
@@ -715,6 +791,7 @@ def collect_website(dossier: Dossier, fetcher: Fetcher, entity: dict[str, Any], 
             continue
         assessment = assess_identity(entity, crawl, related_orgs)
         if assessment["status"] == "exact":
+            assessment["related_organisation_numbers_allowed"] = sorted(related_orgs or [])
             crawl_more(crawl, fetcher)
             outcome = publish_site(dossier, entity, crawl, assessment)
             outcome["candidate_origin"] = candidate.origin

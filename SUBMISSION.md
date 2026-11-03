@@ -48,6 +48,10 @@ Two connectors are in the code at this commit and switch on only when the evalua
 
 They are covered by tests against saved sample responses. **They have not been run against the live services**, because no key was available, so the first keyed run is also their first live test. All numbers below are without keys.
 
+## Precision hand-check
+
+40 random companies with a verified website were checked by hand against the cited pages, before and after this revision's fixes: [reports/audit/hand-check.md](reports/audit/hand-check.md).
+
 ## Measured runs
 
 Both batches were drawn from the public 411,160-company universe with a fixed seed (`python -m signalpost select`, seeds 20261013 and 424242). Run from a home connection in India, about 0.9 s per request to the Norwegian register.
@@ -58,10 +62,10 @@ Both batches were drawn from the public 411,160-company universe with a fixed se
 |---|---|
 | Companies in / envelopes out | 100 / 100 |
 | Terminal states | available 100 |
-| Runtime | 318 s (210 s of it is the rate-limited filing-years endpoint, used only for small batches; about 70 s is the throttled job board) |
-| Outbound requests | 869 (8.7 per company) |
+| Runtime | 322 s (210 s of it is the rate-limited filing-years endpoint, used only for small batches; about 70 s is the throttled job board) |
+| Outbound requests | 860 (8.6 per company) |
 | External API cost | $0 |
-| Published facts | 8,037 (80 per company), 8,269 evidence records |
+| Published facts | 8,041 (80 per company), 8,284 evidence records |
 | Website gate | verified 8, ambiguous 17, no usable candidate 75 |
 | Validation | all checks passed |
 
@@ -75,13 +79,13 @@ Both batches were drawn from the public 411,160-company universe with a fixed se
 | Official website (verified or labelled group site) | 10 | not_available 75, ambiguous 15 |
 | Company-owned profiles | 5 | not_available 95 |
 | Contact details | 7 | not_available 93 |
-| Hiring | 2 | blocked 86, not_available 12 |
+| Hiring | 0 | blocked 86, not_available 13, ambiguous 1 |
 | Customer reviews | 3 | not_available 97 |
 | Dated public activity | 100 | none |
 
 ### Refresh rerun on the same 100 (`smoke-100-run2`)
 
-100 of 100 compared with the previous snapshot, 0 changes, 0 carried-forward claims, same fact count (8,037). Report: [reports/smoke-100/run-report-refresh.json](reports/smoke-100/run-report-refresh.json).
+100 of 100 compared with the previous snapshot, 0 changes, 0 carried-forward claims, same fact count (8,041). Report: [reports/smoke-100/run-report-refresh.json](reports/smoke-100/run-report-refresh.json).
 
 ### 1,000-company run (`batch-1000-run1`)
 
@@ -89,11 +93,11 @@ Both batches were drawn from the public 411,160-company universe with a fixed se
 |---|---|
 | Companies in / envelopes out | 1,000 / 1,000 |
 | Terminal states | available 1,000 |
-| Runtime | 628 s (10.5 minutes) |
-| Outbound requests | 7,824 (7.8 per company) |
+| Runtime | 679 s (11.3 minutes) |
+| Outbound requests | 7,814 (7.8 per company) |
 | External API cost | $0 |
-| Published facts | 78,594 (79 per company), 80,759 evidence records |
-| Website gate | verified 131, ambiguous 148, blocked 16, no usable candidate 705 |
+| Published facts | 78,413 (78 per company), 80,581 evidence records |
+| Website gate | verified 131, ambiguous 143, blocked 10, no usable candidate 710, not applicable 6 (deleted from the register) |
 | Validation | all checks passed |
 
 | Section | Companies with facts | Other states |
@@ -103,16 +107,16 @@ Both batches were drawn from the public 411,160-company universe with a fixed se
 | Leadership | 1,000 | none |
 | Registered workplaces | 776 | not_available 224 |
 | Group structure | 1,000 | none |
-| Official website (verified or labelled group site) | 141 | not_available 705, ambiguous 138, blocked 16 |
-| Company-owned profiles | 80 | not_available 920 |
+| Official website (verified or labelled group site) | 140 | not_available 716, ambiguous 134, blocked 10 |
+| Company-owned profiles | 81 | not_available 919 |
 | Contact details | 81 | not_available 919 |
-| Hiring | 25 | blocked 869, not_available 106 |
+| Hiring | 0 | blocked 863, not_available 131, ambiguous 6 |
 | Customer reviews | 27 | not_available 973 |
 | Dated public activity | 1,000 | none |
 
 ### Read these numbers with care
 
-- **Hiring is mostly `blocked`.** NAV's job board answered a handful of searches in the smoke run and then HTTP 429; in the other runs it refused from the first request. The agent stopped asking after three refusals, as designed. In a separate 3-company run from the same machine the board did answer and two Equinor adverts were verified by organisation number, so the path works when the board is not rate-limiting.
+- **Hiring is mostly `blocked` and verified postings are rare.** NAV's job board answered a handful of searches in the smoke run and then HTTP 429; in the other runs it refused from the first request, and the agent stopped asking after three refusals, as designed. Since this revision a careers page on its own no longer counts as hiring (it is listed under the website), and group careers pages and pages saying there are no openings publish nothing, so no company in these batches shows a verified open role from its own site.
 - **"Dated public activity" is 100% because of the register's update feed**, which exists for every company. Dated news from company sites is far rarer.
 - **Customer reviews cover trades only** (27 of 1,000). The source is a third-party directory that Builderr's reference kit marks "rights review required".
 - **Wrong-company check**: every name-based website match in the 100-company sample and 45 in an earlier 1,000-company run were read by hand by the author; none looked wrong. There is no independent label set.
@@ -122,8 +126,8 @@ Both batches were drawn from the public 411,160-company universe with a fixed se
 
 | Limit | Assumed | Measured |
 |---|---|---|
-| Time | 45 minutes | 5.3 minutes for 100 companies, 10.5 minutes for 1,000 |
-| Requests | 2,000 per 100 companies | 869 per 100 companies |
+| Time | 45 minutes | 5.4 minutes for 100 companies, 11.3 minutes for 1,000 |
+| Requests | 2,000 per 100 companies | 860 per 100 companies |
 | External API cost | $10 | $0 |
 
 The exact official limits are not published on the challenge page; `--time-budget-min` and `--max-requests` set them.

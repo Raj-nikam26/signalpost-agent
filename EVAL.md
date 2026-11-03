@@ -8,7 +8,7 @@ The hidden daily batch is the exam. These are the local checks that gate every c
 python -m unittest discover -s tests
 ```
 
-46 tests, no network, a few seconds. Each one pins a failure that would cost the run:
+50 tests, no network, a few seconds. Each one pins a failure that would cost the run:
 
 | Risk | Tests |
 |---|---|
@@ -48,6 +48,10 @@ After each smoke run every published website, and every fact taken from one, is 
 | An employee's university mail domain used as a website candidate | An email domain is a candidate only when it relates to the legal name |
 
 After the fixes, the reviewer found no wrong-company publication among the verified sites in the 100-company sample. That is a hand check by the author of one sample, not an independent label set.
+
+## 5. Hand-check by source type
+
+After the organiser's review, 40 random companies with a verified website were checked by hand, fact by fact, against the cited pages. Before the fixes, news (63%), careers pages (63%) and brand names (67%) were the weak sources; websites and social profiles were 100%. After the fixes every source type in the sample was correct. Details and the rule used: [reports/audit/hand-check.md](reports/audit/hand-check.md).
 
 ## What is not measured
 

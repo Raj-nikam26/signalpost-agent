@@ -6,6 +6,7 @@ import copy
 import json
 import tempfile
 import unittest
+import urllib.parse
 from pathlib import Path
 
 from signalpost.batch import read_inputs, run_batch, validate
@@ -400,6 +401,56 @@ class KeyedConnectors(unittest.TestCase):
         self.assertTrue(budget.spend("brave_search", 0.005))
         self.assertFalse(budget.spend("google_places", 0.035))
         self.assertAlmostEqual(budget.cost_usd, 0.01)
+
+
+class ReviewFixes(unittest.TestCase):
+    """Regressions for the organiser's review: news, group pages and jobs."""
+
+    def site(self, pages):
+        class Site(Fetcher):
+            def get(self, url, **_):
+                path = urllib.parse.urlsplit(url).path
+                return page_response(url, pages.get(path, pages["/"]))
+
+            def robots_allows(self, url, source_class):
+                return True
+        return Site()
+
+    HOME = ('<html><head><title>Nordlys Bakeri AS</title></head><body><p>Org.nr 923609016</p>'
+            '<a href="/karriere">Karriere</a><a href="/nyheter">Nyheter</a>'
+            '<article><a href="/kampanje/salg">Stort salg i butikken denne uken</a><time datetime="2026-09-01">1. sep</time></article>'
+            '<a href="https://www.facebook.com/nordlysgruppen">Facebook</a>%s</body></html>')
+
+    def test_dated_page_blocks_are_not_news(self):
+        dossier = Dossier(ORG)
+        website.collect_website(dossier, self.site({"/": self.HOME % ""}), entity(), allow_guess=False)
+        self.assertFalse([c for c in dossier.claims.values() if c["field"] == "company_news_item" and c["availability"] == "available"])
+
+    def test_careers_page_saying_no_openings_publishes_no_job(self):
+        careers = ('<html><head><title>Karriere</title></head><body><h1>Jobb hos oss</h1><p>Vi har for tiden ingen ledige stillinger.</p>'
+                   '<a href="/karriere/apen-soknad">Åpen søknad til stilling</a></body></html>')
+        dossier = Dossier(ORG)
+        website.collect_website(dossier, self.site({"/": self.HOME % "", "/karriere": careers}), entity(), allow_guess=False)
+        self.assertFalse([c for c in dossier.claims.values() if c["field"] == "job_posting" and c["availability"] == "available"])
+        self.assertNotIn("website.careers_page", dossier.claims)
+        self.assertIn("no open positions", dossier.claims["hiring.site_jobs"]["explanation"])
+
+    def test_group_careers_page_publishes_no_job(self):
+        careers = ('<html><head><title>Ledige stillinger i gruppen</title></head><body><p>Jobb i Nordlys Bakeri AS, Nordlys Kafe AS eller Nordlys Catering AS.</p>'
+                   '<a href="/karriere/baker">Baker søkes til stilling i Tromsø</a></body></html>')
+        dossier = Dossier(ORG)
+        website.collect_website(dossier, self.site({"/": self.HOME % "", "/karriere": careers}), entity(), allow_guess=False)
+        self.assertFalse([c for c in dossier.claims.values() if c["field"] == "job_posting" and c["availability"] == "available"])
+        self.assertIn("several companies", dossier.claims["hiring.site_jobs"]["explanation"])
+
+    def test_shared_site_keeps_only_profiles_named_after_this_company(self):
+        extra = '<p>Nordlys Kafe AS org.nr 914778271</p><a href="https://www.instagram.com/nordlysbakeri">Instagram</a>'
+        dossier = Dossier(ORG)
+        outcome = website.collect_website(dossier, self.site({"/": self.HOME % extra}), entity(), allow_guess=False)
+        self.assertTrue(outcome["shared_site"])
+        self.assertNotIn("profile.facebook", dossier.claims)   # group handle
+        self.assertIn("profile.instagram", dossier.claims)     # carries this company's own legal name
+        self.assertEqual(dossier.claims["activity.news"]["availability"], "ambiguous")
 
 
 class Refresh(unittest.TestCase):

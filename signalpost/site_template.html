@@ -147,6 +147,11 @@ dl.kv dt{color:var(--ink3)} dl.kv dd{margin:0;overflow-wrap:anywhere}
 .cmp-bar.neg{background:var(--bad)}
 .best{font-weight:700}
 .empty{padding:40px 16px;text-align:center;color:var(--ink3)}
+.since{display:flex;gap:6px 18px;flex-wrap:wrap;align-items:baseline;margin-top:14px;padding:9px 12px;border:1px solid var(--rule);background:var(--surface)}
+.since a{text-decoration:none;color:var(--ink2)}
+.delta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:4px 0 16px}
+.delta ul{margin:0;padding-left:18px;font-size:14px}
+@media (max-width:700px){.delta{grid-template-columns:1fr}}
 @media (max-width:960px){.charts{grid-template-columns:1fr}.layout{grid-template-columns:minmax(0,1fr);gap:14px}.toc{position:static;display:flex;overflow-x:auto;gap:0;border-bottom:1px solid var(--rule)}.toc a{border-left:0;border-bottom:2px solid transparent;white-space:nowrap}.toc a.on{border-color:var(--accent);background:none}.toc a .n{display:none}}
 @media (max-width:700px){
  .mast-in{gap:10px;padding:8px 14px}.find{order:5;flex-basis:100%}.find kbd{display:none}main{padding:16px 14px 110px}
@@ -315,6 +320,8 @@ async function viewCompany(org){ const app=$("#app"); if(!cache[org]) app.innerH
   <h1>${esc(id.legal_name||org)}</h1>
   <div class="head-meta"><span>Org. no. <span class="num">${esc(org)}</span></span>${id.public_brand?`<span>Trades as “${esc(id.public_brand)}”</span>`:""}${id.legal_form?`<span>${esc(id.legal_form)}</span>`:""}${id.municipality?`<span>${esc(id.municipality)}</span>`:""}${id.official_website?`<span>${link(id.official_website)}</span>`:""}<span>${stateTag}</span></div>
   <p class="lede">${esc(s.headline||"This organisation number could not be resolved to a company in the official register.")}</p>
+  ${(()=>{ const w=s.what_changed||{}, c=w.counts||{}; if(!w.compared_with_run) return `<p class="note" style="margin-top:10px">First run for this company: there is no earlier snapshot yet. The next run will show what is new and what was dropped.</p>`;
+     return `<div class="since"><span class="caps">Since the run of ${day(w.previous_completed_at)}</span><a href="#changes" data-act="jump" data-toc="changes"><b class="num">+${c.added||0}</b> new</a><a href="#changes" data-act="jump" data-toc="changes"><b class="num">−${c.removed||0}</b> dropped</a><a href="#changes" data-act="jump" data-toc="changes"><b class="num">${c.changed||0}</b> updated</a></div>`; })()}
   <div class="btn-row" style="margin-top:16px"><button class="btn ${inCmp?"solid":""}" data-act="cmp-toggle" data-org="${esc(org)}">${inCmp?"✓ In comparison":"Add to comparison"}</button>
     <a class="btn" href="https://data.brreg.no/enhetsregisteret/oppslag/enheter/${esc(org)}" target="_blank" rel="noopener noreferrer">Open in the official register ↗</a><button class="btn" data-act="raw">Download JSON</button></div>
   <div class="layout"><nav class="toc" aria-label="Sections">${toc.map(([k,l,c],i)=>`<a href="#${k}" data-act="jump" data-toc="${k}" class="${i?"":"on"}">${l}<span class="n">${c}</span></a>`).join("")}</nav><div>
@@ -332,6 +339,7 @@ async function viewCompany(org){ const app=$("#app"); if(!cache[org]) app.innerH
    ${sec(d,"market","Hiring and reviews",["hiring","reviews"])}
    ${sec(d,"activity","Activity",["public_activity"],timeline(d))}
    <section class="sec" id="changes"><div class="sec-head"><h2>Changes</h2><span class="muted small">${esc((s.what_changed||{}).note||"")}</span></div>
+     ${(s.what_changed||{}).compared_with_run?`<div class="delta">${[["new","New since last run","available"],["dropped","Dropped since last run","high"],["updated","Updated values","medium"]].map(([k,l,t])=>{ const xs=(s.what_changed||{})[k]||[]; return `<div><h3 class="caps">${l} <span class="tag ${t}">${xs.length}</span></h3>${xs.length?`<ul>${xs.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:'<p class="muted small">Nothing.</p>'}</div>`; }).join("")}</div>`:""}
      <div class="facts">${(d.changes||[]).map(c=>`<div class="fact"><div class="k">${tag(c.materiality)} ${esc(c.change_type.replace(/_/g," "))}<div class="note">detected ${day(c.detected_at)}</div></div><div class="v">${esc(c.summary)}<div class="note">before <span class="num">${esc(JSON.stringify(c.old_value)).slice(0,160)}</span><br>after <span class="num">${esc(JSON.stringify(c.new_value)).slice(0,160)}</span></div></div><div>${link(c.source_url,"source ↗")}<div class="note">${(c.old_evidence||[]).length} earlier record kept</div></div></div>`).join("")||`<div class="fact"><div class="k">No change</div><div class="v muted">Nothing differs from the previous snapshot.</div><div></div></div>`}
      ${(d.change_history||[]).length?`<h3 class="caps" style="margin-top:14px">Earlier runs</h3>${d.change_history.slice().reverse().slice(0,25).map(c=>`<div class="small"><span class="num">${day(c.detected_at)}</span> ${tag(c.materiality)} ${esc(c.summary)}</div>`).join("")}`:""}</div></section>
    <section class="sec" id="unknowns"><div class="sec-head"><h2>What this profile does not know</h2></div>
